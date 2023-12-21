@@ -1,0 +1,23 @@
+/*
+level
+curExp
+maxExp
+curHp
+maxHp
+curMp
+maxMp
+curSp
+maxSp
+physicalDamage
+magicDamage
+strength
+dexterity
+Intelligence
+agility
+constitution
+wisdom
+crystal
+
+ 
+ 
+ */
