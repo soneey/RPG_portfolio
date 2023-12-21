@@ -2,6 +2,14 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    private enum playerMotion
+    {
+        idleFront,
+        idleBack,
+        idleRight,
+        idleLeft,
+    }
+
     [SerializeField] private float moveDelay = 0.5f;
     private float moveDelayTimer = 0.0f;
     private bool checkMoving;
@@ -15,7 +23,7 @@ public class Player : MonoBehaviour
     private void Awake()
     {
         rigid = GetComponent<Rigidbody>();
-        sprite = GetComponent<Sprite>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
     void Start()
     {
@@ -25,9 +33,13 @@ public class Player : MonoBehaviour
     void Update()
     {
         moving();
-        turning();
+        doAnimation();
+        //turning();
     }
 
+    /// <summary>
+    /// 플레이어가 상하좌우 1칸씩 좌표이동 후 다음이동간 딜레이체크
+    /// </summary>
     private void moving()
     {
         if (Input.GetKey(KeyCode.RightArrow) && checkMoving == false)
@@ -35,9 +47,6 @@ public class Player : MonoBehaviour
             moveVec = transform.position;
             moveVec += new Vector3(1, 0, 0);
             transform.position = moveVec;
-
-
-            
             checkMoving = true;
         }
         if (Input.GetKey(KeyCode.LeftArrow) && checkMoving == false)
@@ -52,9 +61,6 @@ public class Player : MonoBehaviour
             moveVec = transform.position;
             moveVec += new Vector3(0, 1, 0);
             transform.position = moveVec;
-
-            animator.SetInteger("WalkBack", 1);
-
             checkMoving = true;
         }
         if (Input.GetKey(KeyCode.DownArrow) && checkMoving == false)
@@ -64,17 +70,39 @@ public class Player : MonoBehaviour
             transform.position = moveVec;
             checkMoving = true;
         }
-        checkDelay();
+        checkMovingDelay();
     }
-    private void turning()
+    int count = 0;
+    private void doAnimation()
     {
-        if (Input.GetKey(KeyCode.LeftShift) && Input.GetKey(KeyCode.RightArrow))
-        {
-            sprite = spriteRenderer.sprite; 
-        }
+        //if (count == 0 && Input.GetKeyDown(KeyCode.UpArrow) && checkMoving == false)
+        //{
+        //    //animator.SetInteger("WalkBack1", 1);
+        //    animator.Play("WalkBack1");
+        //    count++;
+        //}
+        //if (count == 1 && Input.GetKeyDown(KeyCode.UpArrow) && checkMoving == false)
+        //{
+        //    //animator.SetInteger("WalkBack1", 1);
+        //    animator.Play("WalkBack2");
+        //    count--;
+        //}
     }
 
-    private void checkDelay()
+
+    //private void turning()
+    //{
+    //    if (Input.GetKeyUp(KeyCode.DownArrow) || (Input.GetKey(KeyCode.LeftShift) && Input.GetKey(KeyCode.DownArrow)))
+    //    {
+    //        sprite = spriteRenderer.sprite;
+    //    }
+    //}
+
+    /// <summary>
+    /// 플레이어 이동 후 다음 이동간에 딜레이
+    /// 예정 ! 버프상태면 딜레이를 줄여서 이동속도를 증가
+    /// </summary>
+    private void checkMovingDelay()
     {
         if (checkMoving == false) { return; }
         if (checkMoving == true && moveDelayTimer != 0)
@@ -87,6 +115,6 @@ public class Player : MonoBehaviour
             moveDelayTimer = moveDelay;
             checkMoving = false;
         }
-        Debug.Log(moveDelayTimer);
+        //Debug.Log(moveDelayTimer);
     }
 }
