@@ -1,14 +1,18 @@
+using UnityEditor.U2D;
 using UnityEngine;
 
 public class Player : MonoBehaviour
 {
     private enum playerMotion
     {
-        idleFront,
-        idleBack,
-        idleRight,
-        idleLeft,
+        None,
+        IdleFront,
+        IdleBack,
+        IdleRight,
+        IdleLeft,
     }
+    playerMotion curMotion = playerMotion.None;
+    playerMotion beforeMotion = playerMotion.None;
 
     [SerializeField] private float moveDelay = 0.5f;
     private float moveDelayTimer = 0.0f;
@@ -16,14 +20,29 @@ public class Player : MonoBehaviour
 
     Rigidbody rigid;
     Animator animator;
-    SpriteRenderer spriteRenderer;
-    Sprite sprite;
+    SpriteRenderer sr;
     Vector3 moveVec;
+
+    private enum Step
+    {
+        None,
+        LeftDirLeftFoot,
+        LeftDirRightFoot,
+        RightDirLeftFoot,
+        RightDirRightFoot,
+        BackDirLeftFoot,
+        BackDirRightFoot,
+        FrontDirLeftFoot,
+        FrontDirRightFoot,
+    }
+
+    Step curStep = Step.None;
+    Step beforeStep = Step.None;
 
     private void Awake()
     {
         rigid = GetComponent<Rigidbody>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
+        sr = GetComponent<SpriteRenderer>();
     }
     void Start()
     {
@@ -34,7 +53,7 @@ public class Player : MonoBehaviour
     {
         moving();
         doAnimation();
-        //turning();
+        turning();
     }
 
     /// <summary>
@@ -48,6 +67,16 @@ public class Player : MonoBehaviour
             moveVec += new Vector3(1, 0, 0);
             transform.position = moveVec;
             checkMoving = true;
+            moveDelayTimer = moveDelay;
+            curStep = curStep == Step.RightDirLeftFoot ? Step.RightDirRightFoot : Step.RightDirLeftFoot;
+            //if (curStep == Step.RightDirLeftFoot)
+            //{
+            //    curStep = Step.RightDirRightFoot;
+            //}
+            //else
+            //{
+            //    curStep = Step.RightDirLeftFoot;
+            //}
         }
         if (Input.GetKey(KeyCode.LeftArrow) && checkMoving == false)
         {
@@ -55,6 +84,8 @@ public class Player : MonoBehaviour
             moveVec += new Vector3(-1, 0, 0);
             transform.position = moveVec;
             checkMoving = true;
+            moveDelayTimer = moveDelay;
+            curStep = curStep == Step.LeftDirLeftFoot ? Step.LeftDirRightFoot : Step.LeftDirLeftFoot;
         }
         if (Input.GetKey(KeyCode.UpArrow) && checkMoving == false)
         {
@@ -62,6 +93,8 @@ public class Player : MonoBehaviour
             moveVec += new Vector3(0, 1, 0);
             transform.position = moveVec;
             checkMoving = true;
+            moveDelayTimer = moveDelay;
+            curStep = curStep == Step.BackDirLeftFoot ? Step.BackDirRightFoot : Step.BackDirLeftFoot;
         }
         if (Input.GetKey(KeyCode.DownArrow) && checkMoving == false)
         {
@@ -69,34 +102,83 @@ public class Player : MonoBehaviour
             moveVec += new Vector3(0, -1, 0);
             transform.position = moveVec;
             checkMoving = true;
+            moveDelayTimer = moveDelay;
+            curStep = curStep == Step.FrontDirLeftFoot ? Step.FrontDirRightFoot : Step.FrontDirLeftFoot;
         }
+
         checkMovingDelay();
     }
-    int count = 0;
+
+    /// <summary>
+    /// 플레이어 이동방향에 따른 애니메이션 출력
+    /// 왼발 오른발 번갈아가면서 출력
+    /// </summary>
     private void doAnimation()
     {
-        //if (count == 0 && Input.GetKeyDown(KeyCode.UpArrow) && checkMoving == false)
-        //{
-        //    //animator.SetInteger("WalkBack1", 1);
-        //    animator.Play("WalkBack1");
-        //    count++;
-        //}
-        //if (count == 1 && Input.GetKeyDown(KeyCode.UpArrow) && checkMoving == false)
-        //{
-        //    //animator.SetInteger("WalkBack1", 1);
-        //    animator.Play("WalkBack2");
-        //    count--;
-        //}
+        if (checkMoving == true && curStep != beforeStep)
+        {
+            beforeStep = curStep;
+            switch (curStep)
+            {
+                case Step.LeftDirLeftFoot:
+                    {
+                        animator.Play("WalkLeft1");
+                        curMotion = playerMotion.IdleLeft;
+                        break;
+                    }
+                case Step.LeftDirRightFoot:
+                    {
+                        animator.Play("WalkLeft2");
+                        curMotion = playerMotion.IdleLeft;
+                        break;
+                    }
+                case Step.RightDirLeftFoot:
+                    {
+                        animator.Play("WalkRight1");
+                        curMotion = playerMotion.IdleRight;
+                        break;
+                    }
+                case Step.RightDirRightFoot:
+                    {
+                        animator.Play("WalkRight2");
+                        curMotion = playerMotion.IdleRight;
+                        break;
+                    }
+                case Step.BackDirLeftFoot:
+                    {
+                        animator.Play("WalkBack1");
+                        curMotion = playerMotion.IdleBack;
+                        break;
+                    }
+                case Step.BackDirRightFoot:
+                    {
+                        animator.Play("WalkBack2");
+                        curMotion = playerMotion.IdleBack;
+                        break;
+                    }
+                case Step.FrontDirLeftFoot:
+                    {
+                        animator.Play("WalkFront1");
+                        curMotion = playerMotion.IdleFront;
+                        break;
+                    }
+                case Step.FrontDirRightFoot:
+                    {
+                        animator.Play("WalkFront2");
+                        curMotion = playerMotion.IdleFront;
+                        break;
+                    }
+            }
+        }
     }
 
-
-    //private void turning()
-    //{
-    //    if (Input.GetKeyUp(KeyCode.DownArrow) || (Input.GetKey(KeyCode.LeftShift) && Input.GetKey(KeyCode.DownArrow)))
-    //    {
-    //        sprite = spriteRenderer.sprite;
-    //    }
-    //}
+    private void turning()
+    {
+        if (Input.GetKeyDown(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            curMotion = playerMotion.IdleFront;
+        }
+    }
 
     /// <summary>
     /// 플레이어 이동 후 다음 이동간에 딜레이
@@ -109,12 +191,19 @@ public class Player : MonoBehaviour
         {
             moveDelayTimer -= Time.deltaTime;
         }
-        if (moveDelayTimer <= 0)
+        if (moveDelayTimer < 0)
         {
             moveDelayTimer = 0.0f;
-            moveDelayTimer = moveDelay;
             checkMoving = false;
         }
         //Debug.Log(moveDelayTimer);
+    }
+
+    public void PlayerMotion()
+    {
+        if (curMotion == playerMotion.IdleFront)
+        {
+            //curMotion = sr.sprite.GetSpriteID;
+        }
     }
 }
