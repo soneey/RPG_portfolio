@@ -6,26 +6,10 @@ public class Player : MonoBehaviour
     private enum playerMotion
     {
         None,
-        IdleFront,
-        IdleBack,
-        IdleRight,
         IdleLeft,
-    }
-    playerMotion curMotion = playerMotion.None;
-    playerMotion beforeMotion = playerMotion.None;
-
-    [SerializeField] private float moveDelay = 0.5f;
-    private float moveDelayTimer = 0.0f;
-    private bool checkMoving;
-
-    Rigidbody rigid;
-    Animator animator;
-    SpriteRenderer sr;
-    Vector3 moveVec;
-
-    private enum Step
-    {
-        None,
+        IdleRight,
+        IdleBack,
+        IdleFront,
         LeftDirLeftFoot,
         LeftDirRightFoot,
         RightDirLeftFoot,
@@ -35,175 +19,449 @@ public class Player : MonoBehaviour
         FrontDirLeftFoot,
         FrontDirRightFoot,
     }
+    playerMotion curMotion = playerMotion.None;
+    playerMotion beforeMotion = playerMotion.None;
+    [SerializeField] private Sprite[] idle;
+    [SerializeField] private bool footCheck;
 
-    Step curStep = Step.None;
-    Step beforeStep = Step.None;
+
+    [Header("플레이어 행동딜레이")]
+    [SerializeField] private float checkDelayCount = 100.0f;
+    private bool checkDelay;
+
+    [Header("스프라이트 딜레이")]
+    [SerializeField] private float spriteChangeDelay = 0.0f;
+    private bool checkChangeSpriteDelay;
+
+    Rigidbody rigid;
+    Animator animator;
+    SpriteRenderer sr;
+    Vector3 moveVec;
+    Vector3 moveDir;
+
+    private object manager;
 
     private void Awake()
     {
         rigid = GetComponent<Rigidbody>();
-        sr = GetComponent<SpriteRenderer>();
+        sr = gameObject.GetComponent<SpriteRenderer>();
+
     }
     void Start()
     {
         animator = transform.GetComponent<Animator>();
+        GameManager manager = GameManager.Instance;
     }
 
     void Update()
     {
         moving();
-        doAnimation();
+        changeSprite();
         turning();
     }
 
     /// <summary>
-    /// 플레이어가 상하좌우 1칸씩 좌표이동 후 다음이동간 딜레이체크
+    /// 플레이어가 상하좌우 1칸씩 좌표이동 후 모션변경
     /// </summary>
     private void moving()
     {
-        if (Input.GetKey(KeyCode.RightArrow) && checkMoving == false)
+        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) { return; }
+        else
         {
-            moveVec = transform.position;
-            moveVec += new Vector3(1, 0, 0);
-            transform.position = moveVec;
-            checkMoving = true;
-            moveDelayTimer = moveDelay;
-            curStep = curStep == Step.RightDirLeftFoot ? Step.RightDirRightFoot : Step.RightDirLeftFoot;
-            //if (curStep == Step.RightDirLeftFoot)
-            //{
-            //    curStep = Step.RightDirRightFoot;
-            //}
-            //else
-            //{
-            //    curStep = Step.RightDirLeftFoot;
-            //}
+            if ((Input.GetKey(KeyCode.LeftArrow) && checkDelay == false && footCheck == false))
+            {
+                moveVec = transform.position;
+                moveVec += new Vector3(-1, 0, 0);
+                transform.position = moveVec;
+                checkDelay = true;
+                checkChangeSpriteDelay = true;
+                curMotion = playerMotion.LeftDirLeftFoot;
+            }
+            if ((Input.GetKey(KeyCode.LeftArrow) && checkDelay == false && footCheck == true))
+            {
+                moveVec = transform.position;
+                moveVec += new Vector3(-1, 0, 0);
+                transform.position = moveVec;
+                checkDelay = true;
+                checkChangeSpriteDelay = true;
+                curMotion = playerMotion.LeftDirRightFoot;
+            }
+            if ((Input.GetKey(KeyCode.RightArrow) && checkDelay == false && footCheck == false))
+            {
+                moveVec = transform.position;
+                moveVec += new Vector3(1, 0, 0);
+                transform.position = moveVec;
+                checkDelay = true;
+                checkChangeSpriteDelay = true;
+                curMotion = playerMotion.RightDirLeftFoot;
+            }
+            if ((Input.GetKey(KeyCode.RightArrow) && checkDelay == false && footCheck == true))
+            {
+                moveVec = transform.position;
+                moveVec += new Vector3(1, 0, 0);
+                transform.position = moveVec;
+                checkDelay = true;
+                checkChangeSpriteDelay = true;
+                curMotion = playerMotion.RightDirRightFoot;
+            }
+            if ((Input.GetKey(KeyCode.UpArrow) && checkDelay == false && footCheck == false))
+            {
+                moveVec = transform.position;
+                moveVec += new Vector3(0, 1, 0);
+                transform.position = moveVec;
+                checkDelay = true;
+                checkChangeSpriteDelay = true;
+                curMotion = playerMotion.BackDirLeftFoot;
+            }
+            if ((Input.GetKey(KeyCode.UpArrow) && checkDelay == false && footCheck == true))
+            {
+                moveVec = transform.position;
+                moveVec += new Vector3(0, 1, 0);
+                transform.position = moveVec;
+                checkDelay = true;
+                checkChangeSpriteDelay = true;
+                curMotion = playerMotion.BackDirRightFoot;
+            }
+            if ((Input.GetKey(KeyCode.DownArrow) && checkDelay == false && footCheck == false))
+            {
+                moveVec = transform.position;
+                moveVec += new Vector3(0, -1, 0);
+                transform.position = moveVec;
+                checkDelay = true;
+                checkChangeSpriteDelay = true;
+                curMotion = playerMotion.FrontDirLeftFoot;
+            }
+            if ((Input.GetKey(KeyCode.DownArrow) && checkDelay == false && footCheck == true))
+            {
+                moveVec = transform.position;
+                moveVec += new Vector3(0, -1, 0);
+                transform.position = moveVec;
+                checkDelay = true;
+                checkChangeSpriteDelay = true;
+                curMotion = playerMotion.FrontDirRightFoot;
+            }
+            //curMotion = curMotion == playerMotion.FrontDirLeftFoot ? playerMotion.FrontDirRightFoot : playerMotion.FrontDirLeftFoot;
+            checkActionDelay(0.5f);//플레이어의 이동 딜레이
         }
-        if (Input.GetKey(KeyCode.LeftArrow) && checkMoving == false)
-        {
-            moveVec = transform.position;
-            moveVec += new Vector3(-1, 0, 0);
-            transform.position = moveVec;
-            checkMoving = true;
-            moveDelayTimer = moveDelay;
-            curStep = curStep == Step.LeftDirLeftFoot ? Step.LeftDirRightFoot : Step.LeftDirLeftFoot;
-        }
-        if (Input.GetKey(KeyCode.UpArrow) && checkMoving == false)
-        {
-            moveVec = transform.position;
-            moveVec += new Vector3(0, 1, 0);
-            transform.position = moveVec;
-            checkMoving = true;
-            moveDelayTimer = moveDelay;
-            curStep = curStep == Step.BackDirLeftFoot ? Step.BackDirRightFoot : Step.BackDirLeftFoot;
-        }
-        if (Input.GetKey(KeyCode.DownArrow) && checkMoving == false)
-        {
-            moveVec = transform.position;
-            moveVec += new Vector3(0, -1, 0);
-            transform.position = moveVec;
-            checkMoving = true;
-            moveDelayTimer = moveDelay;
-            curStep = curStep == Step.FrontDirLeftFoot ? Step.FrontDirRightFoot : Step.FrontDirLeftFoot;
-        }
-
-        checkMovingDelay();
     }
 
     /// <summary>
-    /// 플레이어 이동방향에 따른 애니메이션 출력
+    /// Player, Enemy의 모든 행동 후 다음 행동 간의 딜레이를 관리하는 기능
+    /// </summary>
+    /// <param name="_value"></param>
+    private void checkActionDelay(float _value)
+    {
+        if (checkDelay == false) { return; }
+        if (checkDelayCount == 100.0f && checkDelay == true)
+        {
+            checkDelayCount -= _value;
+        }
+        if (checkDelayCount != 100.0f && checkDelay == true)
+        {
+            checkDelayCount += Time.deltaTime;
+            //Debug.Log(checkDelayCount);
+        }
+        if (checkDelayCount > 100)
+        {
+            checkDelayCount = 100.0f;
+            checkDelay = false;
+        }
+    }
+
+    /// <summary>
+    /// 플레이어 이동방향에 따른 스프라이트 변경
     /// 왼발 오른발 번갈아가면서 출력
     /// </summary>
-    private void doAnimation()
+    private void changeSprite()
     {
-        if (checkMoving == true && curStep != beforeStep)
+        if (checkChangeSpriteDelay == false) { return; }
+        if (checkChangeSpriteDelay == true)
         {
-            beforeStep = curStep;
-            switch (curStep)
+            if (curMotion == playerMotion.LeftDirLeftFoot)
             {
-                case Step.LeftDirLeftFoot:
-                    {
-                        animator.Play("WalkLeft1");
-                        curMotion = playerMotion.IdleLeft;
-                        break;
-                    }
-                case Step.LeftDirRightFoot:
-                    {
-                        animator.Play("WalkLeft2");
-                        curMotion = playerMotion.IdleLeft;
-                        break;
-                    }
-                case Step.RightDirLeftFoot:
-                    {
-                        animator.Play("WalkRight1");
-                        curMotion = playerMotion.IdleRight;
-                        break;
-                    }
-                case Step.RightDirRightFoot:
-                    {
-                        animator.Play("WalkRight2");
-                        curMotion = playerMotion.IdleRight;
-                        break;
-                    }
-                case Step.BackDirLeftFoot:
-                    {
-                        animator.Play("WalkBack1");
-                        curMotion = playerMotion.IdleBack;
-                        break;
-                    }
-                case Step.BackDirRightFoot:
-                    {
-                        animator.Play("WalkBack2");
-                        curMotion = playerMotion.IdleBack;
-                        break;
-                    }
-                case Step.FrontDirLeftFoot:
-                    {
-                        animator.Play("WalkFront1");
-                        curMotion = playerMotion.IdleFront;
-                        break;
-                    }
-                case Step.FrontDirRightFoot:
-                    {
-                        animator.Play("WalkFront2");
-                        curMotion = playerMotion.IdleFront;
-                        break;
-                    }
+                if (spriteChangeDelay == 0 && checkChangeSpriteDelay == true)
+                {
+                    sr.sprite = idle[1];
+                    spriteChangeDelay = 0.3f;
+                }
+                if (spriteChangeDelay != 0 && checkChangeSpriteDelay == true)
+                {
+                    spriteChangeDelay -= Time.deltaTime;
+                }
+                if (spriteChangeDelay < 0 && checkChangeSpriteDelay == true)
+                {
+                    spriteChangeDelay = 0.0f;
+                    curMotion = playerMotion.IdleLeft;
+                    sr.sprite = idle[0];
+                    checkChangeSpriteDelay = false;
+                    footCheck = true;
+                }
             }
+            if (curMotion == playerMotion.LeftDirRightFoot)
+            {
+                if (spriteChangeDelay == 0 && checkChangeSpriteDelay == true)
+                {
+                    sr.sprite = idle[2];
+                    spriteChangeDelay = 0.3f;
+                }
+                if (spriteChangeDelay != 0 && checkChangeSpriteDelay == true)
+                {
+                    spriteChangeDelay -= Time.deltaTime;
+                }
+                if (spriteChangeDelay < 0 && checkChangeSpriteDelay == true)
+                {
+                    spriteChangeDelay = 0.0f;
+                    curMotion = playerMotion.IdleLeft;
+                    sr.sprite = idle[0];
+                    checkChangeSpriteDelay = false;
+                    footCheck = false;
+                }
+            }
+            if (curMotion == playerMotion.RightDirLeftFoot)
+            {
+                if (spriteChangeDelay == 0 && checkChangeSpriteDelay == true)
+                {
+                    sr.sprite = idle[4];
+                    spriteChangeDelay = 0.3f;
+                }
+                if (spriteChangeDelay != 0 && checkChangeSpriteDelay == true)
+                {
+                    spriteChangeDelay -= Time.deltaTime;
+                }
+                if (spriteChangeDelay < 0 && checkChangeSpriteDelay == true)
+                {
+                    spriteChangeDelay = 0.0f;
+                    curMotion = playerMotion.IdleRight;
+                    sr.sprite = idle[3];
+                    checkChangeSpriteDelay = false;
+                    footCheck = true;
+                }
+            }
+            if (curMotion == playerMotion.RightDirRightFoot)
+            {
+                if (spriteChangeDelay == 0 && checkChangeSpriteDelay == true)
+                {
+                    sr.sprite = idle[5];
+                    spriteChangeDelay = 0.3f;
+                }
+                if (spriteChangeDelay != 0 && checkChangeSpriteDelay == true)
+                {
+                    spriteChangeDelay -= Time.deltaTime;
+                }
+                if (spriteChangeDelay < 0 && checkChangeSpriteDelay == true)
+                {
+                    spriteChangeDelay = 0.0f;
+                    curMotion = playerMotion.IdleRight;
+                    sr.sprite = idle[3];
+                    checkChangeSpriteDelay = false;
+                    footCheck = false;
+                }
+            }
+            if (curMotion == playerMotion.BackDirLeftFoot)
+            {
+                if (spriteChangeDelay == 0 && checkChangeSpriteDelay == true)
+                {
+                    sr.sprite = idle[7];
+                    spriteChangeDelay = 0.3f;
+                }
+                if (spriteChangeDelay != 0 && checkChangeSpriteDelay == true)
+                {
+                    spriteChangeDelay -= Time.deltaTime;
+                }
+                if (spriteChangeDelay < 0 && checkChangeSpriteDelay == true)
+                {
+                    spriteChangeDelay = 0.0f;
+                    curMotion = playerMotion.IdleBack;
+                    sr.sprite = idle[6];
+                    checkChangeSpriteDelay = false;
+                    footCheck = true;
+                }
+            }
+            if (curMotion == playerMotion.BackDirRightFoot)
+            {
+                if (spriteChangeDelay == 0 && checkChangeSpriteDelay == true)
+                {
+                    sr.sprite = idle[8];
+                    spriteChangeDelay = 0.3f;
+                }
+                if (spriteChangeDelay != 0 && checkChangeSpriteDelay == true)
+                {
+                    spriteChangeDelay -= Time.deltaTime;
+                }
+                if (spriteChangeDelay < 0 && checkChangeSpriteDelay == true)
+                {
+                    spriteChangeDelay = 0.0f;
+                    curMotion = playerMotion.IdleBack;
+                    sr.sprite = idle[6];
+                    checkChangeSpriteDelay = false;
+                    footCheck = false;
+                }
+            }
+            if (curMotion == playerMotion.FrontDirLeftFoot)
+            {
+                if (spriteChangeDelay == 0 && checkChangeSpriteDelay == true)
+                {
+                    sr.sprite = idle[10];
+                    spriteChangeDelay = 0.3f;
+                }
+                if (spriteChangeDelay != 0 && checkChangeSpriteDelay == true)
+                {
+                    spriteChangeDelay -= Time.deltaTime;
+                }
+                if (spriteChangeDelay < 0 && checkChangeSpriteDelay == true)
+                {
+                    spriteChangeDelay = 0.0f;
+                    curMotion = playerMotion.IdleFront;
+                    sr.sprite = idle[9];
+                    checkChangeSpriteDelay = false;
+                    footCheck = true;
+                }
+            }
+            if (curMotion == playerMotion.FrontDirRightFoot)
+            {
+                if (spriteChangeDelay == 0 && checkChangeSpriteDelay == true)
+                {
+                    sr.sprite = idle[11];
+                    spriteChangeDelay = 0.3f;
+                }
+                if (spriteChangeDelay != 0 && checkChangeSpriteDelay == true)
+                {
+                    spriteChangeDelay -= Time.deltaTime;
+                }
+                if (spriteChangeDelay < 0 && checkChangeSpriteDelay == true)
+                {
+                    spriteChangeDelay = 0.0f;
+                    curMotion = playerMotion.IdleFront;
+                    sr.sprite = idle[9];
+                    checkChangeSpriteDelay = false;
+                    footCheck = false;
+                }
+            }
+
         }
     }
 
-    private void turning()
-    {
-        if (Input.GetKeyDown(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.DownArrow))
-        {
-            curMotion = playerMotion.IdleFront;
-        }
-    }
 
     /// <summary>
-    /// 플레이어 이동 후 다음 이동간에 딜레이
-    /// 예정 ! 버프상태면 딜레이를 줄여서 이동속도를 증가
+    /// 제자리에서 플레이어의 방향전환 기능
     /// </summary>
-    private void checkMovingDelay()
+    private void turning()
     {
-        if (checkMoving == false) { return; }
-        if (checkMoving == true && moveDelayTimer != 0)
+        if ((Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.LeftArrow)) || (Input.GetKey(KeyCode.RightShift) && Input.GetKeyDown(KeyCode.LeftArrow)))
         {
-            moveDelayTimer -= Time.deltaTime;
+            moveDir = transform.position;
+            moveDir += new Vector3(0, 1, 0);
+            Debug.Log(moveDir);
+            moveDir += new Vector3(0, -1, 0);
+            Debug.Log(moveDir);
+            transform.position = moveDir;
+            curMotion = playerMotion.IdleLeft;
+            playerMotionChange();
         }
-        if (moveDelayTimer < 0)
+        if ((Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.RightArrow)) || (Input.GetKey(KeyCode.RightShift) && Input.GetKeyDown(KeyCode.RightArrow)))
         {
-            moveDelayTimer = 0.0f;
-            checkMoving = false;
+            moveDir = transform.position;
+            moveDir += new Vector3(0, 1, 0);
+            Debug.Log(moveDir);
+            moveDir += new Vector3(0, -1, 0);
+            Debug.Log(moveDir);
+            transform.position = moveDir;
+            curMotion = playerMotion.IdleRight;
+            playerMotionChange();
         }
-        //Debug.Log(moveDelayTimer);
+        if ((Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.UpArrow)) || (Input.GetKey(KeyCode.RightShift) && Input.GetKeyDown(KeyCode.UpArrow)))
+        {
+            moveDir = transform.position;
+            moveDir += new Vector3(0, -1, 0);
+            Debug.Log(moveDir);
+            moveDir += new Vector3(0, 1, 0);
+            Debug.Log(moveDir);
+            transform.position = moveDir;
+            curMotion = playerMotion.IdleBack;
+            playerMotionChange();
+        }
+        if ((Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.DownArrow)) || (Input.GetKey(KeyCode.RightShift) && Input.GetKeyDown(KeyCode.DownArrow)))
+        {
+            moveDir = transform.position;
+            moveDir += new Vector3(0, 1, 0);
+            Debug.Log(moveDir);
+            moveDir += new Vector3(0, -1, 0);
+            Debug.Log(moveDir);
+            transform.position = moveDir;
+            curMotion = playerMotion.IdleFront;
+            playerMotionChange();
+        }
     }
 
-    public void PlayerMotion()
+
+    /// <summary>
+    /// 플레이어의 모션이 변경되면 스프라이트를 변경
+    /// </summary>
+    private void playerMotionChange()
     {
-        if (curMotion == playerMotion.IdleFront)
+        switch (curMotion)
         {
-            //curMotion = sr.sprite.GetSpriteID;
+            case playerMotion.IdleLeft:
+                {
+                    sr.sprite = idle[0];
+                    break;
+                }
+            case playerMotion.LeftDirLeftFoot:
+                {
+                    sr.sprite = idle[1];
+                    break;
+                }
+            case playerMotion.LeftDirRightFoot:
+                {
+                    sr.sprite = idle[2];
+                    break;
+                }
+            case playerMotion.IdleRight:
+                {
+                    sr.sprite = idle[3];
+                    break;
+                }
+            case playerMotion.RightDirLeftFoot:
+                {
+                    sr.sprite = idle[4];
+                    break;
+                }
+            case playerMotion.RightDirRightFoot:
+                {
+                    sr.sprite = idle[5];
+                    break;
+                }
+            case playerMotion.IdleBack:
+                {
+                    sr.sprite = idle[6];
+                    break;
+                }
+            case playerMotion.BackDirLeftFoot:
+                {
+                    sr.sprite = idle[7];
+                    break;
+                }
+            case playerMotion.BackDirRightFoot:
+                {
+                    sr.sprite = idle[8];
+                    break;
+                }
+            case playerMotion.IdleFront:
+                {
+                    sr.sprite = idle[9];
+                    break;
+                }
+            case playerMotion.FrontDirLeftFoot:
+                {
+                    sr.sprite = idle[10];
+                    break;
+                }
+            case playerMotion.FrontDirRightFoot:
+                {
+                    sr.sprite = idle[11];
+                    break;
+                }
         }
     }
 }
+
