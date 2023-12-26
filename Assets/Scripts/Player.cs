@@ -18,6 +18,10 @@ public class Player : MonoBehaviour
         BackDirRightFoot,
         FrontDirLeftFoot,
         FrontDirRightFoot,
+        AttackLeft,
+        AttackRight,
+        AttackBack,
+        AttackFront,
     }
     playerMotion curMotion = playerMotion.None;
     playerMotion beforeMotion = playerMotion.None;
@@ -34,10 +38,9 @@ public class Player : MonoBehaviour
     private bool checkChangeSpriteDelay;
 
     Rigidbody rigid;
-    Animator animator;
     SpriteRenderer sr;
     Vector3 moveVec;
-    Vector3 moveDir;
+    Vector3 lookDir;
 
     private object manager;
 
@@ -49,7 +52,6 @@ public class Player : MonoBehaviour
     }
     void Start()
     {
-        animator = transform.GetComponent<Animator>();
         GameManager manager = GameManager.Instance;
     }
 
@@ -58,6 +60,7 @@ public class Player : MonoBehaviour
         moving();
         changeSprite();
         turning();
+        attack();
     }
 
     /// <summary>
@@ -192,7 +195,6 @@ public class Player : MonoBehaviour
                 {
                     spriteChangeDelay = 0.0f;
                     curMotion = playerMotion.IdleLeft;
-                    sr.sprite = idle[0];
                     checkChangeSpriteDelay = false;
                     footCheck = true;
                 }
@@ -212,7 +214,6 @@ public class Player : MonoBehaviour
                 {
                     spriteChangeDelay = 0.0f;
                     curMotion = playerMotion.IdleLeft;
-                    sr.sprite = idle[0];
                     checkChangeSpriteDelay = false;
                     footCheck = false;
                 }
@@ -232,7 +233,6 @@ public class Player : MonoBehaviour
                 {
                     spriteChangeDelay = 0.0f;
                     curMotion = playerMotion.IdleRight;
-                    sr.sprite = idle[3];
                     checkChangeSpriteDelay = false;
                     footCheck = true;
                 }
@@ -252,7 +252,6 @@ public class Player : MonoBehaviour
                 {
                     spriteChangeDelay = 0.0f;
                     curMotion = playerMotion.IdleRight;
-                    sr.sprite = idle[3];
                     checkChangeSpriteDelay = false;
                     footCheck = false;
                 }
@@ -272,7 +271,6 @@ public class Player : MonoBehaviour
                 {
                     spriteChangeDelay = 0.0f;
                     curMotion = playerMotion.IdleBack;
-                    sr.sprite = idle[6];
                     checkChangeSpriteDelay = false;
                     footCheck = true;
                 }
@@ -292,7 +290,6 @@ public class Player : MonoBehaviour
                 {
                     spriteChangeDelay = 0.0f;
                     curMotion = playerMotion.IdleBack;
-                    sr.sprite = idle[6];
                     checkChangeSpriteDelay = false;
                     footCheck = false;
                 }
@@ -312,7 +309,6 @@ public class Player : MonoBehaviour
                 {
                     spriteChangeDelay = 0.0f;
                     curMotion = playerMotion.IdleFront;
-                    sr.sprite = idle[9];
                     checkChangeSpriteDelay = false;
                     footCheck = true;
                 }
@@ -332,12 +328,11 @@ public class Player : MonoBehaviour
                 {
                     spriteChangeDelay = 0.0f;
                     curMotion = playerMotion.IdleFront;
-                    sr.sprite = idle[9];
                     checkChangeSpriteDelay = false;
                     footCheck = false;
                 }
             }
-
+            playerMotionChange();
         }
     }
 
@@ -349,50 +344,49 @@ public class Player : MonoBehaviour
     {
         if ((Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.LeftArrow)) || (Input.GetKey(KeyCode.RightShift) && Input.GetKeyDown(KeyCode.LeftArrow)))
         {
-            moveDir = transform.position;
-            moveDir += new Vector3(0, 1, 0);
-            Debug.Log(moveDir);
-            moveDir += new Vector3(0, -1, 0);
-            Debug.Log(moveDir);
-            transform.position = moveDir;
+            lookDir = transform.position;
+            lookDir = new Vector3(-1, 0);
             curMotion = playerMotion.IdleLeft;
             playerMotionChange();
         }
         if ((Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.RightArrow)) || (Input.GetKey(KeyCode.RightShift) && Input.GetKeyDown(KeyCode.RightArrow)))
         {
-            moveDir = transform.position;
-            moveDir += new Vector3(0, 1, 0);
-            Debug.Log(moveDir);
-            moveDir += new Vector3(0, -1, 0);
-            Debug.Log(moveDir);
-            transform.position = moveDir;
+            lookDir = transform.position;
+            lookDir = new Vector3(1, 0);
             curMotion = playerMotion.IdleRight;
             playerMotionChange();
         }
         if ((Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.UpArrow)) || (Input.GetKey(KeyCode.RightShift) && Input.GetKeyDown(KeyCode.UpArrow)))
         {
-            moveDir = transform.position;
-            moveDir += new Vector3(0, -1, 0);
-            Debug.Log(moveDir);
-            moveDir += new Vector3(0, 1, 0);
-            Debug.Log(moveDir);
-            transform.position = moveDir;
+            lookDir = transform.position;
+            lookDir += new Vector3(0, -1, 0);
+            Debug.Log(lookDir);
+            lookDir += new Vector3(0, 1, 0);
+            Debug.Log(lookDir);
+            transform.position = lookDir;
             curMotion = playerMotion.IdleBack;
             playerMotionChange();
         }
         if ((Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.DownArrow)) || (Input.GetKey(KeyCode.RightShift) && Input.GetKeyDown(KeyCode.DownArrow)))
         {
-            moveDir = transform.position;
-            moveDir += new Vector3(0, 1, 0);
-            Debug.Log(moveDir);
-            moveDir += new Vector3(0, -1, 0);
-            Debug.Log(moveDir);
-            transform.position = moveDir;
+            lookDir = transform.position;
+            lookDir += new Vector3(0, 1, 0);
+            Debug.Log(lookDir);
+            lookDir += new Vector3(0, -1, 0);
+            Debug.Log(lookDir);
+            transform.position = lookDir;
             curMotion = playerMotion.IdleFront;
             playerMotionChange();
         }
     }
 
+    private void attack()
+    {
+        if (Input.GetKey(KeyCode.Space))
+        { 
+        
+        }
+    }
 
     /// <summary>
     /// 플레이어의 모션이 변경되면 스프라이트를 변경
