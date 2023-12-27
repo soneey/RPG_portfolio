@@ -29,6 +29,7 @@ public class Player : MonoBehaviour
     [SerializeField] private bool isMoving;
     Vector3 moveVec;
     Vector3 lookDir;
+    Vector3 target;
 
     [Header("스프라이트 딜레이")]
     [SerializeField] private float spriteChangeDelay = 0.0f;
@@ -38,12 +39,7 @@ public class Player : MonoBehaviour
     SpriteRenderer sr;
 
     private object manager;
-    TriggerCheck LeftTriggerCheck;
-    TriggerCheck RightTriggerCheck;
-    TriggerCheck BackTriggerCheck;
-    TriggerCheck FrontTriggerCheck;
-
-
+    TriggerCheck triggerCheck;
     internal void TriggerEnter(playerMotion attack, Collider2D collision)
     {
         throw new NotImplementedException();
@@ -58,10 +54,8 @@ public class Player : MonoBehaviour
     {
         rigid = GetComponent<Rigidbody>();
         sr = GetComponent<SpriteRenderer>();
-        LeftTriggerCheck = GetComponentInChildren<TriggerCheck>();
-        RightTriggerCheck = GetComponentInChildren<TriggerCheck>();
-        BackTriggerCheck = GetComponentInChildren<TriggerCheck>();
-        FrontTriggerCheck = GetComponentInChildren<TriggerCheck>();
+        triggerCheck = GetComponentInChildren<TriggerCheck>();
+
 
     }
     void Start()
@@ -76,17 +70,32 @@ public class Player : MonoBehaviour
         turning();
         attack();
         if (isMoving == true)
-        { 
+        {
             ratio += Time.deltaTime * 2.0f;
-            Debug.Log(moveVec.x);
+            Debug.Log($"ratio = {ratio}");
+            Debug.Log($"moveVec.x = {target.x}");
         }
         if (ratio >= 1.0f)
         {
+            ratio = 1.0f;
             isMoving = false;
+        }
+        if (isMoving == false && ratio == 1.0f)
+        {
             ratio = 0.0f;
         }
+
+        toTarget();
     }
 
+    private void toTarget()
+    {
+        
+        moveVec = transform.position;
+        target.x = Mathf.SmoothStep(moveVec.x, moveVec.x - 1.0f, ratio);
+        moveVec = target;
+        transform.position = new Vector3(moveVec.x, moveVec.y, 0);
+    }
     /// <summary>
     /// 플레이어가 상하좌우 1칸씩 좌표이동 후 모션변경
     /// </summary>
@@ -95,27 +104,25 @@ public class Player : MonoBehaviour
         if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) { return; }
         else
         {
+            Vector3 before;
+            before = moveVec;
+            Debug.Log(before);
             if ((Input.GetKey(KeyCode.LeftArrow) && checkDelay == false && footCheck == false))
             {
                 isMoving = true;
-                moveVec = transform.position;
-                moveVec.x = Mathf.SmoothStep(moveVec.x, moveVec.x -1.0f, ratio);
-                //transform.position = moveVec;
                 lookDir = Vector3.left;
+                curMotion = playerMotion.Step;
                 checkDelay = true;
                 checkChangeSpriteDelay = true;
-                curMotion = playerMotion.Step;
             }
+
             if ((Input.GetKey(KeyCode.LeftArrow) && checkDelay == false && footCheck == true))
             {
                 isMoving = true;
-                moveVec.x = transform.position.x;
-                moveVec.x = Mathf.SmoothStep(moveVec.x, moveVec.x - 1.0f, ratio);
-                //transform.position = moveVec;
                 lookDir = Vector3.left;
+                curMotion = playerMotion.Step;
                 checkDelay = true;
                 checkChangeSpriteDelay = true;
-                curMotion = playerMotion.Step;
             }
             if ((Input.GetKey(KeyCode.RightArrow) && checkDelay == false && footCheck == false))
             {
@@ -177,7 +184,6 @@ public class Player : MonoBehaviour
                 checkChangeSpriteDelay = true;
                 curMotion = playerMotion.Step;
             }
-            transform.position = moveVec;
             //curMotion = curMotion == playerMotion.FrontDirLeftFoot ? playerMotion.FrontDirRightFoot : playerMotion.FrontDirLeftFoot;
             checkActionDelay(0.5f);//플레이어의 이동 딜레이
         }
