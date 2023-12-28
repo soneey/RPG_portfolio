@@ -65,39 +65,45 @@ public class Player : MonoBehaviour
 
     void Update()
     {
+        softMoving();
         moving();
         changeSprite();
         turning();
         attack();
-        if (isMoving == true)
+
+    }
+
+    Vector3 before;
+    Vector3 after;
+    private bool beforeSave;
+
+    private void softMoving()
+    {
+        if (isMoving == true && beforeSave == true)
+        {
+            before = transform.position;
+            beforeSave = false;
+        }
+        Debug.Log($"before = {before}");
+        Debug.Log($"moveVec = {moveVec}");
+        Debug.Log($"target = {target}");
+        Debug.Log($"ratio = {ratio}");
+        if (isMoving == true && beforeSave == false)
         {
             ratio += Time.deltaTime * 2.0f;
-            Debug.Log($"ratio = {ratio}");
-            Debug.Log($"moveVec.x = {target.x}");
+            moveVec = transform.position;
+            after.x = Mathf.SmoothStep(before.x, target.x, ratio);
+            after.y = Mathf.SmoothStep(before.y, target.y, ratio);
+            moveVec = after;
         }
-        if (ratio >= 1.0f)
-        {
-            ratio = 1.0f;
-            isMoving = false;
-        }
-        if (isMoving == false && ratio == 1.0f)
+        if (isMoving == true && ratio >= 1.0f)
         {
             ratio = 0.0f;
+            isMoving = false;
         }
-
-        toTarget();
+        transform.position = moveVec;
     }
 
-    Vector3 before = Transform.Instantiate();
-
-    private void toTarget()
-    {
-
-        moveVec = transform.position;
-        target.x = Mathf.SmoothStep(moveVec.x, moveVec.x - 1.0f, ratio);
-        moveVec = target;
-        transform.position = new Vector3(moveVec.x, moveVec.y, 0);
-    }
     /// <summary>
     /// 플레이어가 상하좌우 1칸씩 좌표이동 후 모션변경
     /// </summary>
@@ -106,83 +112,48 @@ public class Player : MonoBehaviour
         if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) { return; }
         else
         {
-            before = moveVec;
-            Debug.Log($"before = {before}");
-            if ((Input.GetKey(KeyCode.LeftArrow) && checkDelay == false && footCheck == false))
+            if (((Input.GetKey(KeyCode.LeftArrow) && checkDelay == false && footCheck == false))
+                || (((Input.GetKey(KeyCode.LeftArrow) && checkDelay == false && footCheck == true))))
             {
                 isMoving = true;
-                lookDir = Vector3.left;
-                curMotion = playerMotion.Step;
+                beforeSave = true;
+                target = new Vector3(transform.position.x - 1, transform.position.y);
                 checkDelay = true;
                 checkChangeSpriteDelay = true;
+                lookDir = Vector3.left;
+                curMotion = playerMotion.Step;
             }
-
-            if ((Input.GetKey(KeyCode.LeftArrow) && checkDelay == false && footCheck == true))
+            if (((Input.GetKey(KeyCode.RightArrow) && checkDelay == false && footCheck == false))
+                || ((Input.GetKey(KeyCode.RightArrow) && checkDelay == false && footCheck == true)))
             {
                 isMoving = true;
-                lookDir = Vector3.left;
-                curMotion = playerMotion.Step;
+                beforeSave = true;
+                target = new Vector3(transform.position.x + 1, transform.position.y);
                 checkDelay = true;
                 checkChangeSpriteDelay = true;
-            }
-            if ((Input.GetKey(KeyCode.RightArrow) && checkDelay == false && footCheck == false))
-            {
-                moveVec = transform.position;
-                moveVec += new Vector3(1, 0, 0);
-                transform.position = moveVec;
                 lookDir = Vector3.right;
-                checkDelay = true;
-                checkChangeSpriteDelay = true;
                 curMotion = playerMotion.Step;
             }
-            if ((Input.GetKey(KeyCode.RightArrow) && checkDelay == false && footCheck == true))
+            if (((Input.GetKey(KeyCode.UpArrow) && checkDelay == false && footCheck == false))
+                || ((Input.GetKey(KeyCode.UpArrow) && checkDelay == false && footCheck == true)))
             {
-                moveVec = transform.position;
-                moveVec += new Vector3(1, 0, 0);
-                transform.position = moveVec;
-                lookDir = Vector3.right;
+                isMoving = true;
+                beforeSave = true;
+                target = new Vector3(transform.position.x, transform.position.y + 1);
                 checkDelay = true;
                 checkChangeSpriteDelay = true;
-                curMotion = playerMotion.Step;
-            }
-            if ((Input.GetKey(KeyCode.UpArrow) && checkDelay == false && footCheck == false))
-            {
-                moveVec = transform.position;
-                moveVec += new Vector3(0, 1, 0);
-                transform.position = moveVec;
                 lookDir = Vector3.up;
-                checkDelay = true;
-                checkChangeSpriteDelay = true;
                 curMotion = playerMotion.Step;
             }
-            if ((Input.GetKey(KeyCode.UpArrow) && checkDelay == false && footCheck == true))
+            if (((Input.GetKey(KeyCode.DownArrow) && checkDelay == false && footCheck == false))
+                || ((Input.GetKey(KeyCode.DownArrow) && checkDelay == false && footCheck == true)))
             {
-                moveVec = transform.position;
-                moveVec += new Vector3(0, 1, 0);
-                transform.position = moveVec;
-                lookDir = Vector3.up;
+                isMoving = true;
+                beforeSave = true;
+                target = new Vector3(transform.position.x, transform.position.y - 1);
                 checkDelay = true;
                 checkChangeSpriteDelay = true;
-                curMotion = playerMotion.Step;
-            }
-            if ((Input.GetKey(KeyCode.DownArrow) && checkDelay == false && footCheck == false))
-            {
-                moveVec = transform.position;
-                moveVec += new Vector3(0, -1, 0);
-                transform.position = moveVec;
                 lookDir = Vector3.down;
-                checkDelay = true;
-                checkChangeSpriteDelay = true;
-                curMotion = playerMotion.Step;
-            }
-            if ((Input.GetKey(KeyCode.DownArrow) && checkDelay == false && footCheck == true))
-            {
-                moveVec = transform.position;
-                moveVec += new Vector3(0, -1, 0);
-                transform.position = moveVec;
-                lookDir = Vector3.down;
-                checkDelay = true;
-                checkChangeSpriteDelay = true;
                 curMotion = playerMotion.Step;
             }
             //curMotion = curMotion == playerMotion.FrontDirLeftFoot ? playerMotion.FrontDirRightFoot : playerMotion.FrontDirLeftFoot;
@@ -260,159 +231,6 @@ public class Player : MonoBehaviour
                     footCheck = false;
                 }
             }
-
-            //if (curMotion == playerMotion.Step && lookDir == Vector3.left && footCheck == false)
-            //{
-            //    if (spriteChangeDelay == 0 && checkChangeSpriteDelay == true)
-            //    {
-            //        playerMotionChange();
-            //        spriteChangeDelay = 0.3f;
-            //    }
-            //    if (spriteChangeDelay != 0 && checkChangeSpriteDelay == true)
-            //    {
-            //        spriteChangeDelay -= Time.deltaTime;
-            //    }
-            //    if (spriteChangeDelay < 0 && checkChangeSpriteDelay == true)
-            //    {
-            //        spriteChangeDelay = 0.0f;
-            //        curMotion = playerMotion.Idle;
-            //        checkChangeSpriteDelay = false;
-            //        footCheck = true;
-            //    }
-            //}
-            //if (curMotion == playerMotion.Step && lookDir == Vector3.left && footCheck == true)
-            //{
-            //    if (spriteChangeDelay == 0 && checkChangeSpriteDelay == true)
-            //    {
-            //        playerMotionChange();
-            //        spriteChangeDelay = 0.3f;
-            //    }
-            //    if (spriteChangeDelay != 0 && checkChangeSpriteDelay == true)
-            //    {
-            //        spriteChangeDelay -= Time.deltaTime;
-            //    }
-            //    if (spriteChangeDelay < 0 && checkChangeSpriteDelay == true)
-            //    {
-            //        spriteChangeDelay = 0.0f;
-            //        curMotion = playerMotion.Idle;
-            //        checkChangeSpriteDelay = false;
-            //        footCheck = false;
-            //    }
-            //}
-            //if (curMotion == playerMotion.Step && lookDir == Vector3.right && footCheck == false)
-            //{
-            //    if (spriteChangeDelay == 0 && checkChangeSpriteDelay == true)
-            //    {
-            //        playerMotionChange();
-            //        spriteChangeDelay = 0.3f;
-            //    }
-            //    if (spriteChangeDelay != 0 && checkChangeSpriteDelay == true)
-            //    {
-            //        spriteChangeDelay -= Time.deltaTime;
-            //    }
-            //    if (spriteChangeDelay < 0 && checkChangeSpriteDelay == true)
-            //    {
-            //        spriteChangeDelay = 0.0f;
-            //        curMotion = playerMotion.Idle;
-            //        checkChangeSpriteDelay = false;
-            //        footCheck = true;
-            //    }
-            //}
-            //if (curMotion == playerMotion.Step && lookDir == Vector3.right && footCheck == true)
-            //{
-            //    if (spriteChangeDelay == 0 && checkChangeSpriteDelay == true)
-            //    {
-            //        playerMotionChange();
-            //        spriteChangeDelay = 0.3f;
-            //    }
-            //    if (spriteChangeDelay != 0 && checkChangeSpriteDelay == true)
-            //    {
-            //        spriteChangeDelay -= Time.deltaTime;
-            //    }
-            //    if (spriteChangeDelay < 0 && checkChangeSpriteDelay == true)
-            //    {
-            //        spriteChangeDelay = 0.0f;
-            //        curMotion = playerMotion.Idle;
-            //        checkChangeSpriteDelay = false;
-            //        footCheck = false;
-            //    }
-            //}
-            //if (curMotion == playerMotion.Step && lookDir == Vector3.up && footCheck == false)
-            //{
-            //    if (spriteChangeDelay == 0 && checkChangeSpriteDelay == true)
-            //    {
-            //        playerMotionChange();
-            //        spriteChangeDelay = 0.3f;
-            //    }
-            //    if (spriteChangeDelay != 0 && checkChangeSpriteDelay == true)
-            //    {
-            //        spriteChangeDelay -= Time.deltaTime;
-            //    }
-            //    if (spriteChangeDelay < 0 && checkChangeSpriteDelay == true)
-            //    {
-            //        spriteChangeDelay = 0.0f;
-            //        curMotion = playerMotion.Idle;
-            //        checkChangeSpriteDelay = false;
-            //        footCheck = true;
-            //    }
-            //}
-            //if (curMotion == playerMotion.Step && lookDir == Vector3.up && footCheck == true)
-            //{
-            //    if (spriteChangeDelay == 0 && checkChangeSpriteDelay == true)
-            //    {
-            //        playerMotionChange();
-            //        spriteChangeDelay = 0.3f;
-            //    }
-            //    if (spriteChangeDelay != 0 && checkChangeSpriteDelay == true)
-            //    {
-            //        spriteChangeDelay -= Time.deltaTime;
-            //    }
-            //    if (spriteChangeDelay < 0 && checkChangeSpriteDelay == true)
-            //    {
-            //        spriteChangeDelay = 0.0f;
-            //        curMotion = playerMotion.Idle;
-            //        checkChangeSpriteDelay = false;
-            //        footCheck = false;
-            //    }
-            //}
-            //if (curMotion == playerMotion.Step && lookDir == Vector3.down && footCheck == false)
-            //{
-            //    if (spriteChangeDelay == 0 && checkChangeSpriteDelay == true)
-            //    {
-            //        playerMotionChange();
-            //        spriteChangeDelay = 0.3f;
-            //    }
-            //    if (spriteChangeDelay != 0 && checkChangeSpriteDelay == true)
-            //    {
-            //        spriteChangeDelay -= Time.deltaTime;
-            //    }
-            //    if (spriteChangeDelay < 0 && checkChangeSpriteDelay == true)
-            //    {
-            //        spriteChangeDelay = 0.0f;
-            //        curMotion = playerMotion.Idle;
-            //        checkChangeSpriteDelay = false;
-            //        footCheck = true;
-            //    }
-            //}
-            //if (curMotion == playerMotion.Step && lookDir == Vector3.down && footCheck == true)
-            //{
-            //    if (spriteChangeDelay == 0 && checkChangeSpriteDelay == true)
-            //    {
-            //        playerMotionChange();
-            //        spriteChangeDelay = 0.3f;
-            //    }
-            //    if (spriteChangeDelay != 0 && checkChangeSpriteDelay == true)
-            //    {
-            //        spriteChangeDelay -= Time.deltaTime;
-            //    }
-            //    if (spriteChangeDelay < 0 && checkChangeSpriteDelay == true)
-            //    {
-            //        spriteChangeDelay = 0.0f;
-            //        curMotion = playerMotion.Idle;
-            //        checkChangeSpriteDelay = false;
-            //        footCheck = false;
-            //    }
-            //}
             playerMotionChange();
         }
     }
@@ -526,66 +344,6 @@ public class Player : MonoBehaviour
                     }
                     break;
                 }
-                //case playerMotion.IdleLeft:
-                //    {
-                //        sr.sprite = idle[0];
-                //        break;
-                //    }
-                //case playerMotion.LeftDirLeftFoot:
-                //    {
-                //        sr.sprite = idle[1];
-                //        break;
-                //    }
-                //case playerMotion.LeftDirRightFoot:
-                //    {
-                //        sr.sprite = idle[2];
-                //        break;
-                //    }
-                //case playerMotion.IdleRight:
-                //    {
-                //        sr.sprite = idle[3];
-                //        break;
-                //    }
-                //case playerMotion.RightDirLeftFoot:
-                //    {
-                //        sr.sprite = idle[4];
-                //        break;
-                //    }
-                //case playerMotion.RightDirRightFoot:
-                //    {
-                //        sr.sprite = idle[5];
-                //        break;
-                //    }
-                //case playerMotion.IdleBack:
-                //    {
-                //        sr.sprite = idle[6];
-                //        break;
-                //    }
-                //case playerMotion.BackDirLeftFoot:
-                //    {
-                //        sr.sprite = idle[7];
-                //        break;
-                //    }
-                //case playerMotion.BackDirRightFoot:
-                //    {
-                //        sr.sprite = idle[8];
-                //        break;
-                //    }
-                //case playerMotion.IdleFront:
-                //    {
-                //        sr.sprite = idle[9];
-                //        break;
-                //    }
-                //case playerMotion.FrontDirLeftFoot:
-                //    {
-                //        sr.sprite = idle[10];
-                //        break;
-                //    }
-                //case playerMotion.FrontDirRightFoot:
-                //    {
-                //        sr.sprite = idle[11];
-                //        break;
-                //    }
         }
     }
 }

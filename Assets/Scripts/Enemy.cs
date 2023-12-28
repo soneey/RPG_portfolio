@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static Player;
+using static UnityEngine.GraphicsBuffer;
 
 public class Enemy : MonoBehaviour
 {
@@ -19,10 +21,9 @@ public class Enemy : MonoBehaviour
         BackDirRightFoot,
         FrontDirLeftFoot,
         FrontDirRightFoot,
-        AttackLeft,
-        AttackRight,
-        AttackBack,
-        AttackFront,
+        Attack,
+        Idle,
+        Step,
     }
     enemyMotion curMotion = enemyMotion.None;
     enemyMotion beforeMotion = enemyMotion.None;
@@ -39,7 +40,11 @@ public class Enemy : MonoBehaviour
     [SerializeField] private float spriteChangeDelay = 0.0f;
     private bool checkChangeSpriteDelay;
 
+    [SerializeField] private float ratio = 0.0f;
+    [SerializeField] private bool isMoving;
     Vector3 moveVec;
+    Vector3 lookDir;
+    Vector3 target;
     private int randomNumber;
 
     SpriteRenderer sr;
@@ -54,10 +59,41 @@ public class Enemy : MonoBehaviour
 
     void Update()
     {
+        softMoving();
         moving();
         changeSprite();
     }
 
+    Vector3 before;
+    Vector3 after;
+    private bool beforeSave;
+
+    private void softMoving()
+    {
+        if (isMoving == true && beforeSave == true)
+        {
+            before = transform.position;
+            beforeSave = false;
+        }
+        Debug.Log($"before = {before}");
+        Debug.Log($"moveVec = {moveVec}");
+        Debug.Log($"target = {target}");
+        Debug.Log($"ratio = {ratio}");
+        if (isMoving == true && beforeSave == false)
+        {
+            ratio += Time.deltaTime * 2.0f;
+            moveVec = transform.position;
+            after.x = Mathf.SmoothStep(before.x, target.x, ratio);
+            after.y = Mathf.SmoothStep(before.y, target.y, ratio);
+            moveVec = after;
+        }
+        if (isMoving == true && ratio >= 1.0f)
+        {
+            ratio = 0.0f;
+            isMoving = false;
+        }
+        transform.position = moveVec;
+    }
     private void moving()
     {
         if (checkDelay == false)
@@ -67,45 +103,49 @@ public class Enemy : MonoBehaviour
             {
                 case 0:
                     {
-                        moveVec = transform.position;
-                        moveVec += new Vector3(-1, 0, 0);
-                        transform.position = moveVec;
+                        isMoving = true;
+                        beforeSave = true;
+                        target = new Vector3(transform.position.x - 1, transform.position.y);
                         checkDelay = true;
                         checkChangeSpriteDelay = true;
-                        curMotion = enemyMotion.LeftDirLeftFoot;
+                        lookDir = Vector3.left;
+                        curMotion = enemyMotion.Step;
                         break;
 
                     }
                 case 1:
                     {
-                        moveVec = transform.position;
-                        moveVec += new Vector3(1, 0, 0);
-                        transform.position = moveVec;
+                        isMoving = true;
+                        beforeSave = true;
+                        target = new Vector3(transform.position.x + 1, transform.position.y);
                         checkDelay = true;
                         checkChangeSpriteDelay = true;
-                        curMotion = enemyMotion.RightDirLeftFoot;
+                        lookDir = Vector3.right;
+                        curMotion = enemyMotion.Step;
                         break;
 
                     }
                 case 2:
                     {
-                        moveVec = transform.position;
-                        moveVec += new Vector3(0, 1, 0);
-                        transform.position = moveVec;
+                        isMoving = true;
+                        beforeSave = true;
+                        target = new Vector3(transform.position.x, transform.position.y + 1);
                         checkDelay = true;
                         checkChangeSpriteDelay = true;
-                        curMotion = enemyMotion.BackDirLeftFoot;
+                        lookDir = Vector3.up;
+                        curMotion = enemyMotion.Step;
                         break;
 
                     }
                 case 3:
                     {
-                        moveVec = transform.position;
-                        moveVec += new Vector3(0, -1, 0);
-                        transform.position = moveVec;
+                        isMoving = true;
+                        beforeSave = true;
+                        target = new Vector3(transform.position.x, transform.position.y - 1);
                         checkDelay = true;
                         checkChangeSpriteDelay = true;
-                        curMotion = enemyMotion.FrontDirLeftFoot;
+                        lookDir = Vector3.down;
+                        curMotion = enemyMotion.Step;
                         break;
                     }
             }
@@ -149,11 +189,11 @@ public class Enemy : MonoBehaviour
         if (checkChangeSpriteDelay == false) { return; }
         if (checkChangeSpriteDelay == true)
         {
-            if (curMotion == enemyMotion.LeftDirLeftFoot)
+            if (curMotion == enemyMotion.Step && footCheck == false)
             {
                 if (spriteChangeDelay == 0 && checkChangeSpriteDelay == true)
                 {
-                    sr.sprite = idle[1];
+                    enemyMotionChange();
                     spriteChangeDelay = 0.3f;
                 }
                 if (spriteChangeDelay != 0 && checkChangeSpriteDelay == true)
@@ -163,16 +203,16 @@ public class Enemy : MonoBehaviour
                 if (spriteChangeDelay < 0 && checkChangeSpriteDelay == true)
                 {
                     spriteChangeDelay = 0.0f;
-                    curMotion = enemyMotion.IdleLeft;
+                    curMotion = enemyMotion.Idle;
                     checkChangeSpriteDelay = false;
                     footCheck = true;
                 }
             }
-            if (curMotion == enemyMotion.LeftDirRightFoot)
+            if (curMotion == enemyMotion.Step && footCheck == true)
             {
                 if (spriteChangeDelay == 0 && checkChangeSpriteDelay == true)
                 {
-                    sr.sprite = idle[2];
+                    enemyMotionChange();
                     spriteChangeDelay = 0.3f;
                 }
                 if (spriteChangeDelay != 0 && checkChangeSpriteDelay == true)
@@ -182,121 +222,7 @@ public class Enemy : MonoBehaviour
                 if (spriteChangeDelay < 0 && checkChangeSpriteDelay == true)
                 {
                     spriteChangeDelay = 0.0f;
-                    curMotion = enemyMotion.IdleLeft;
-                    checkChangeSpriteDelay = false;
-                    footCheck = false;
-                }
-            }
-            if (curMotion == enemyMotion.RightDirLeftFoot)
-            {
-                if (spriteChangeDelay == 0 && checkChangeSpriteDelay == true)
-                {
-                    sr.sprite = idle[4];
-                    spriteChangeDelay = 0.3f;
-                }
-                if (spriteChangeDelay != 0 && checkChangeSpriteDelay == true)
-                {
-                    spriteChangeDelay -= Time.deltaTime;
-                }
-                if (spriteChangeDelay < 0 && checkChangeSpriteDelay == true)
-                {
-                    spriteChangeDelay = 0.0f;
-                    curMotion = enemyMotion.IdleRight;
-                    checkChangeSpriteDelay = false;
-                    footCheck = true;
-                }
-            }
-            if (curMotion == enemyMotion.RightDirRightFoot)
-            {
-                if (spriteChangeDelay == 0 && checkChangeSpriteDelay == true)
-                {
-                    sr.sprite = idle[5];
-                    spriteChangeDelay = 0.3f;
-                }
-                if (spriteChangeDelay != 0 && checkChangeSpriteDelay == true)
-                {
-                    spriteChangeDelay -= Time.deltaTime;
-                }
-                if (spriteChangeDelay < 0 && checkChangeSpriteDelay == true)
-                {
-                    spriteChangeDelay = 0.0f;
-                    curMotion = enemyMotion.IdleRight;
-                    checkChangeSpriteDelay = false;
-                    footCheck = false;
-                }
-            }
-            if (curMotion == enemyMotion.BackDirLeftFoot)
-            {
-                if (spriteChangeDelay == 0 && checkChangeSpriteDelay == true)
-                {
-                    sr.sprite = idle[7];
-                    spriteChangeDelay = 0.3f;
-                }
-                if (spriteChangeDelay != 0 && checkChangeSpriteDelay == true)
-                {
-                    spriteChangeDelay -= Time.deltaTime;
-                }
-                if (spriteChangeDelay < 0 && checkChangeSpriteDelay == true)
-                {
-                    spriteChangeDelay = 0.0f;
-                    curMotion = enemyMotion.IdleBack;
-                    checkChangeSpriteDelay = false;
-                    footCheck = true;
-                }
-            }
-            if (curMotion == enemyMotion.BackDirRightFoot)
-            {
-                if (spriteChangeDelay == 0 && checkChangeSpriteDelay == true)
-                {
-                    sr.sprite = idle[8];
-                    spriteChangeDelay = 0.3f;
-                }
-                if (spriteChangeDelay != 0 && checkChangeSpriteDelay == true)
-                {
-                    spriteChangeDelay -= Time.deltaTime;
-                }
-                if (spriteChangeDelay < 0 && checkChangeSpriteDelay == true)
-                {
-                    spriteChangeDelay = 0.0f;
-                    curMotion = enemyMotion.IdleBack;
-                    checkChangeSpriteDelay = false;
-                    footCheck = false;
-                }
-            }
-            if (curMotion == enemyMotion.FrontDirLeftFoot)
-            {
-                if (spriteChangeDelay == 0 && checkChangeSpriteDelay == true)
-                {
-                    sr.sprite = idle[10];
-                    spriteChangeDelay = 0.3f;
-                }
-                if (spriteChangeDelay != 0 && checkChangeSpriteDelay == true)
-                {
-                    spriteChangeDelay -= Time.deltaTime;
-                }
-                if (spriteChangeDelay < 0 && checkChangeSpriteDelay == true)
-                {
-                    spriteChangeDelay = 0.0f;
-                    curMotion = enemyMotion.IdleFront;
-                    checkChangeSpriteDelay = false;
-                    footCheck = true;
-                }
-            }
-            if (curMotion == enemyMotion.FrontDirRightFoot)
-            {
-                if (spriteChangeDelay == 0 && checkChangeSpriteDelay == true)
-                {
-                    sr.sprite = idle[11];
-                    spriteChangeDelay = 0.3f;
-                }
-                if (spriteChangeDelay != 0 && checkChangeSpriteDelay == true)
-                {
-                    spriteChangeDelay -= Time.deltaTime;
-                }
-                if (spriteChangeDelay < 0 && checkChangeSpriteDelay == true)
-                {
-                    spriteChangeDelay = 0.0f;
-                    curMotion = enemyMotion.IdleFront;
+                    curMotion = enemyMotion.Idle;
                     checkChangeSpriteDelay = false;
                     footCheck = false;
                 }
@@ -313,67 +239,62 @@ public class Enemy : MonoBehaviour
     {
         switch (curMotion)
         {
-            case enemyMotion.IdleLeft:
+            case enemyMotion.Idle:
                 {
-                    sr.sprite = idle[0];
+                    if (curMotion == enemyMotion.Idle && lookDir == Vector3.left)
+                    {
+                        sr.sprite = idle[0];
+                    }
+                    if (curMotion == enemyMotion.Idle && lookDir == Vector3.right)
+                    {
+                        sr.sprite = idle[3];
+                    }
+                    if (curMotion == enemyMotion.Idle && lookDir == Vector3.up)
+                    {
+                        sr.sprite = idle[6];
+                    }
+                    if (curMotion == enemyMotion.Idle && lookDir == Vector3.down)
+                    {
+                        sr.sprite = idle[9];
+                    }
                     break;
                 }
-            case enemyMotion.LeftDirLeftFoot:
+            case enemyMotion.Step:
                 {
-                    sr.sprite = idle[1];
-                    break;
-                }
-            case enemyMotion.LeftDirRightFoot:
-                {
-                    sr.sprite = idle[2];
-                    break;
-                }
-            case enemyMotion.IdleRight:
-                {
-                    sr.sprite = idle[3];
-                    break;
-                }
-            case enemyMotion.RightDirLeftFoot:
-                {
-                    sr.sprite = idle[4];
-                    break;
-                }
-            case enemyMotion.RightDirRightFoot:
-                {
-                    sr.sprite = idle[5];
-                    break;
-                }
-            case enemyMotion.IdleBack:
-                {
-                    sr.sprite = idle[6];
-                    break;
-                }
-            case enemyMotion.BackDirLeftFoot:
-                {
-                    sr.sprite = idle[7];
-                    break;
-                }
-            case enemyMotion.BackDirRightFoot:
-                {
-                    sr.sprite = idle[8];
-                    break;
-                }
-            case enemyMotion.IdleFront:
-                {
-                    sr.sprite = idle[9];
-                    break;
-                }
-            case enemyMotion.FrontDirLeftFoot:
-                {
-                    sr.sprite = idle[10];
-                    break;
-                }
-            case enemyMotion.FrontDirRightFoot:
-                {
-                    sr.sprite = idle[11];
+                    if (curMotion == enemyMotion.Step && lookDir == Vector3.left && footCheck == false)
+                    {
+                        sr.sprite = idle[1];
+                    }
+                    if (curMotion == enemyMotion.Step && lookDir == Vector3.left && footCheck == true)
+                    {
+                        sr.sprite = idle[2];
+                    }
+                    if (curMotion == enemyMotion.Step && lookDir == Vector3.right && footCheck == false)
+                    {
+                        sr.sprite = idle[4];
+                    }
+                    if (curMotion == enemyMotion.Step && lookDir == Vector3.right && footCheck == true)
+                    {
+                        sr.sprite = idle[5];
+                    }
+                    if (curMotion == enemyMotion.Step && lookDir == Vector3.up && footCheck == false)
+                    {
+                        sr.sprite = idle[7];
+                    }
+                    if (curMotion == enemyMotion.Step && lookDir == Vector3.up && footCheck == true)
+                    {
+                        sr.sprite = idle[8];
+                    }
+                    if (curMotion == enemyMotion.Step && lookDir == Vector3.down && footCheck == false)
+                    {
+                        sr.sprite = idle[10];
+                    }
+                    if (curMotion == enemyMotion.Step && lookDir == Vector3.down && footCheck == true)
+                    {
+                        sr.sprite = idle[11];
+                    }
                     break;
                 }
         }
     }
-    
 }

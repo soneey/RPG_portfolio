@@ -15,6 +15,7 @@
  * 애니메이션 동작 후 스프라이트변경에서 충돌이 생겨서 moving을 애니메이션이 아닌 sprite가 교체되는 형식으로 변경
  * turning도 sprite가 교체되는 형식으로 만들었고 gamemanager를 통해 모든 움직임 후 딜레이를 관리하도록 변경
  * 
+ * 오브젝 엔에이블 인스펙터 셋엑티브
 level
 curExp
 maxExp

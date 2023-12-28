@@ -5,9 +5,11 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;//ΩÃ±€≈Ê
-    [SerializeField] private float checkDelayCount = 100.0f;
-    [SerializeField] GameObject objPlayer;
+    [SerializeField] private float checkDelayCount = 3000000.0f;
     private bool checkDelay;
+
+    [Header("∏ÛΩ∫≈Õ ª˝º∫")]
+    [SerializeField] private List<GameObject> listEnemys;//¿ŒΩ∫∆Â≈Õø° «¡∏Æ∆’ ≥÷±‚
     void Start()
     {
 
@@ -24,22 +26,22 @@ public class GameManager : MonoBehaviour
     /// <param name="_value"></param>
     private void checkAllDelay(float _value)
     {
-        if (checkDelayCount != 100.0f && checkDelay == false) { return; }
+        if (checkDelayCount != 3000000.0f && checkDelay == false) { return; }
 
         checkDelayCount = checkDelayCount - _value;
         if (checkDelay == true && _value != 0)
         {
             checkDelayCount += Time.deltaTime;
         }
-        if (checkDelayCount < 100)
+        if (checkDelayCount < 3000000.0f)
         {
-            checkDelayCount = 100.0f;
+            checkDelayCount = 3000000.0f;
             checkDelay = false;
         }
-        //Debug.Log(moveDelayTimer);
     }
-    public GameObject GetPlayerGameObject()
-    {
-        return objPlayer;
+
+    private void enemyRespawn()
+    { 
+    
     }
 }
