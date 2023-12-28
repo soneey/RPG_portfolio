@@ -88,9 +88,11 @@ public class Player : MonoBehaviour
         toTarget();
     }
 
+    Vector3 before = Transform.Instantiate();
+
     private void toTarget()
     {
-        
+
         moveVec = transform.position;
         target.x = Mathf.SmoothStep(moveVec.x, moveVec.x - 1.0f, ratio);
         moveVec = target;
@@ -104,9 +106,8 @@ public class Player : MonoBehaviour
         if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) { return; }
         else
         {
-            Vector3 before;
             before = moveVec;
-            Debug.Log(before);
+            Debug.Log($"before = {before}");
             if ((Input.GetKey(KeyCode.LeftArrow) && checkDelay == false && footCheck == false))
             {
                 isMoving = true;
