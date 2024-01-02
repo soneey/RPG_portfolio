@@ -41,22 +41,13 @@ public class Enemy : MonoBehaviour
 
 
     SpriteRenderer sr;
-    public static Enemy Instance;
     private void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-        }
-        else
-        {
-            Destroy(this);
-        }
         sr = gameObject.GetComponent<SpriteRenderer>();
     }
     void Start()
     {
-
+        moveVec = transform.position;
     }
     public float GetRespawnTime()
     {
@@ -74,7 +65,7 @@ public class Enemy : MonoBehaviour
     {
         if (isMoving == true && beforeSave == true)
         {
-            before = GameManager.Instance.monsterRespawnPos().position;
+            before = transform.position;
             beforeSave = false;
         }
         //Debug.Log($"before = {before}");
@@ -83,8 +74,7 @@ public class Enemy : MonoBehaviour
         if (isMoving == true && beforeSave == false)
         {
             ratio += Time.deltaTime * 2.0f;
-            //moveVec = GameManager.Instance.monsterRespawnPos().position;
-            Debug.Log($"moveVec = {moveVec}");
+            //Debug.Log($"moveVec = {moveVec}");
             switch (randomDirNumber)
             {
                 case 0:

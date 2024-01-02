@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,7 +17,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private bool CrazyRabbitRespawn;
     [SerializeField] private List<GameObject> listEnemys;//인스펙터에 프리팹 넣기
     [SerializeField] Transform layerEnemy;
-    [SerializeField] Transform[] trsRespawnPos;//리스폰 위치
+    [SerializeField] Vector3 trsRespawnPos;//리스폰 위치
     private int createCount;
     private float timer = 0.0f;
     private int monsterNumber;
@@ -48,9 +49,10 @@ public class GameManager : MonoBehaviour
         if (RabbitRespawn == true) { monsterNumber = 0; }
         if (CrazyRabbitRespawn == true) { monsterNumber = 1; }
     }
-    public Transform monsterRespawnPos()
+
+    private void randomRespawn()
     {
-        return trsRespawnPos[monsterNumber];
+
     }
     private void checkRespawnTime()
     {
@@ -59,31 +61,39 @@ public class GameManager : MonoBehaviour
         //if (timer >= Enemy.Instance.GetRespawnTime())
         if (timer >= 10)
         {
+            checkCurRespawnCount();
             enemyRespawn();
             timer = 0.0f;
         }
     }
+
+    private void checkCurRespawnCount()
+    {
+        if (layerEnemy.childCount != maxRespawnCount)
+        {
+            curRespawnCount = layerEnemy.childCount;
+        }
+    }
     private void enemyRespawn()
     {
-        if (createMonster == true && RabbitRespawn == true)
+        if (createMonster == true)
         {
-            GameObject objEnemy = listEnemys[monsterNumber];
-            GameObject obj = Instantiate(objEnemy, trsRespawnPos[monsterNumber].position, Quaternion.identity, layerEnemy);
-            Enemy objSc = obj.GetComponent<Enemy>();
+            for (int iNum = 0; iNum < maxRespawnCount - curRespawnCount; iNum++)
+            {
+                GameObject objEnemy = listEnemys[monsterNumber];
+                GameObject obj = Instantiate(objEnemy, trsRespawnPos, Quaternion.identity, layerEnemy);
+                Debug.Log(curRespawnCount);
+            }
         }
-        //if (Enemy.Instance.GetcurRespawnCount() < Enemy.Instance.GetmaxRespawnCount())
-        //{
-        //    createCount = Enemy.Instance.GetmaxRespawnCount() - Enemy.Instance.GetcurRespawnCount();
-        //}
-        //if (createCount != 0)
-        //{
-        //    for (int i = 0; i < createCount; i++)
-        //    {
-        //        GameObject obj = Instantiate(listEnemys[0], trsRespawnPos[0].position, Quaternion.identity, layerEnemy);
-        //        Enemy objSc = obj.GetComponent<Enemy>();
-        //    }
-        //}
+        if (layerEnemy.childCount == maxRespawnCount)
+        {
+            createMonster = false;
+        }
     }
+
+
+
+
     /// <summary>
     /// Player, Enemy의 모든 행동 후 딜레이를 관리하는 기능
     /// </summary>
