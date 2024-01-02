@@ -1,62 +1,68 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static Player;
-using static UnityEngine.GraphicsBuffer;
 
 public class Enemy : MonoBehaviour
 {
     private enum enemyMotion
     {
         None,
-        IdleLeft,
-        IdleRight,
-        IdleBack,
-        IdleFront,
-        LeftDirLeftFoot,
-        LeftDirRightFoot,
-        RightDirLeftFoot,
-        RightDirRightFoot,
-        BackDirLeftFoot,
-        BackDirRightFoot,
-        FrontDirLeftFoot,
-        FrontDirRightFoot,
         Attack,
         Idle,
         Step,
+        Run,
     }
+
     enemyMotion curMotion = enemyMotion.None;
     enemyMotion beforeMotion = enemyMotion.None;
-    [SerializeField] private Sprite[] idle;
-    [SerializeField] private bool footCheck;
+
+    [Header("스프라이트 변경")]
+    [SerializeField] private Sprite[] idle;//스프라이트 등록
+    [SerializeField] private bool footCheck;//왼발 오른발 순서 체크
 
 
-    [Header("적 행동딜레이")]
-    [SerializeField] private float checkDelayCount = 100.0f;
-    private bool checkDelay;
-    [SerializeField] private float moveTime;
-
-    [Header("스프라이트 딜레이")]
-    [SerializeField] private float spriteChangeDelay = 0.0f;
+    [Header("이동관련")]
+    [SerializeField, Tooltip("100이 되면 행동, 변경하지 말 것")] private float checkDelayCount = 100.0f;
+    [SerializeField, Tooltip("이동간의 딜레이 시간 설정")] private float moveTime;
+    [SerializeField, Tooltip("리스폰 시간")] private float respawnTime;
+   
+    private float spriteChangeDelay = 0.0f;
+    private float ratio = 0.0f;
+    private int randomDirNumber;
+    private bool isMoving;//이동중인지 체크
+    private bool checkDelay;//이동 후 딜레이체크 시작,종료 체크
     private bool checkChangeSpriteDelay;
-
-    [SerializeField] private float ratio = 0.0f;
-    [SerializeField] private bool isMoving;
     Vector3 moveVec;
     Vector3 lookDir;
     Vector3 target;
-    private int randomNumber;
+    Vector3 before;
+    Vector3 after;
+    private bool beforeSave;
+
 
     SpriteRenderer sr;
+    public static Enemy Instance;
     private void Awake()
     {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(this);
+        }
         sr = gameObject.GetComponent<SpriteRenderer>();
     }
     void Start()
     {
 
     }
-
+    public float GetRespawnTime()
+    {
+        return respawnTime;
+    }
+    
     void Update()
     {
         softMoving();
@@ -64,27 +70,49 @@ public class Enemy : MonoBehaviour
         changeSprite();
     }
 
-    Vector3 before;
-    Vector3 after;
-    private bool beforeSave;
-
     private void softMoving()
     {
         if (isMoving == true && beforeSave == true)
         {
-            before = transform.position;
+            before = GameManager.Instance.monsterRespawnPos().position;
             beforeSave = false;
         }
-        Debug.Log($"before = {before}");
-        Debug.Log($"moveVec = {moveVec}");
-        Debug.Log($"target = {target}");
-        Debug.Log($"ratio = {ratio}");
+        //Debug.Log($"before = {before}");
+        //Debug.Log($"target = {target}");
+        //Debug.Log($"ratio = {ratio}");
         if (isMoving == true && beforeSave == false)
         {
             ratio += Time.deltaTime * 2.0f;
-            moveVec = transform.position;
-            after.x = Mathf.SmoothStep(before.x, target.x, ratio);
-            after.y = Mathf.SmoothStep(before.y, target.y, ratio);
+            //moveVec = GameManager.Instance.monsterRespawnPos().position;
+            Debug.Log($"moveVec = {moveVec}");
+            switch (randomDirNumber)
+            {
+                case 0:
+                    {
+                        after.x = Mathf.SmoothStep(before.x, target.x, ratio);
+                        after.y = before.y;
+                        break;
+                    }
+                case 1:
+                    {
+                        after.x = Mathf.SmoothStep(before.x, target.x, ratio);
+                        after.y = before.y;
+                        break;
+                    }
+                case 2:
+                    {
+                        after.y = Mathf.SmoothStep(before.y, target.y, ratio);
+                        after.x = before.x;
+                        break;
+                    }
+                case 3:
+                    {
+                        after.y = Mathf.SmoothStep(before.y, target.y, ratio);
+                        after.x = before.x;
+                        break;
+                    }
+
+            }
             moveVec = after;
         }
         if (isMoving == true && ratio >= 1.0f)
@@ -99,7 +127,7 @@ public class Enemy : MonoBehaviour
         if (checkDelay == false)
         {
             getRandomNumber();
-            switch (randomNumber)
+            switch (randomDirNumber)
             {
                 case 0:
                     {
@@ -170,20 +198,10 @@ public class Enemy : MonoBehaviour
             checkDelay = false;
         }
     }
-
-    /// <summary>
-    /// 몬스터의 이동방향을 랜덤으로 결정하기 위해 랜덤숫자를 받음
-    /// </summary>
     private void getRandomNumber()
     {
-        randomNumber = Random.Range(0, 4);
+        randomDirNumber = Random.Range(0, 4);
     }
-
-
-    /// <summary>
-    /// 플레이어 이동방향에 따른 스프라이트 변경
-    /// 왼발 오른발 번갈아가면서 출력
-    /// </summary>
     private void changeSprite()
     {
         if (checkChangeSpriteDelay == false) { return; }
@@ -230,11 +248,6 @@ public class Enemy : MonoBehaviour
             enemyMotionChange();
         }
     }
-
-
-    /// <summary>
-    /// 플레이어의 모션이 변경되면 스프라이트를 변경
-    /// </summary>
     private void enemyMotionChange()
     {
         switch (curMotion)

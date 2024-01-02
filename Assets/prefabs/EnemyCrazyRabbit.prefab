@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 4220922364689032324}
   - component: {fileID: 6154631874330280064}
   m_Layer: 0
-  m_Name: EnemyRabbit
+  m_Name: EnemyCrazyRabbit
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -27,7 +27,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 259016454561856218}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.3, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -76,7 +76,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 1
   m_Sprite: {fileID: -1108341659, guid: f1e81b513a64fb24f800439041973e58, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0.33490568, b: 0.33490568, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -113,9 +113,9 @@ MonoBehaviour:
   - {fileID: 1954891261, guid: f1e81b513a64fb24f800439041973e58, type: 3}
   footCheck: 0
   checkDelayCount: 100
-  moveTime: 5
-  maxRespawnCount: 5
-  respawnTime: 5
+  moveTime: 2
+  maxRespawnCount: 2
+  respawnTime: 10
 --- !u!61 &6154631874330280064
 BoxCollider2D:
   m_ObjectHideFlags: 0

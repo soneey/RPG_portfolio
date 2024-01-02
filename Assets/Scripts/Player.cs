@@ -17,8 +17,6 @@ public class Player : MonoBehaviour
     playerMotion beforeMotion = playerMotion.None;
 
 
-
-
     [Header("플레이어 행동딜레이")]
     [SerializeField] private float checkDelayCount = 100.0f;
     [SerializeField] private float ratio = 0.0f;//이동기능 연출 비율
@@ -84,10 +82,10 @@ public class Player : MonoBehaviour
             before = transform.position;
             beforeSave = false;
         }
-        Debug.Log($"before = {before}");
-        Debug.Log($"moveVec = {moveVec}");
-        Debug.Log($"target = {target}");
-        Debug.Log($"ratio = {ratio}");
+        //Debug.Log($"before = {before}");
+        //Debug.Log($"moveVec = {moveVec}");
+        //Debug.Log($"target = {target}");
+        //Debug.Log($"ratio = {ratio}");
         if (isMoving == true && beforeSave == false)
         {
             ratio += Time.deltaTime * 2.0f;
