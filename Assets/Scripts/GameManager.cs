@@ -17,12 +17,14 @@ public class GameManager : MonoBehaviour
     [SerializeField] private bool CrazyRabbitRespawn;
     [SerializeField] private List<GameObject> listEnemys;//인스펙터에 프리팹 넣기
     [SerializeField] Transform layerEnemy;
-    [SerializeField] Vector3 trsRespawnPos;//리스폰 위치
+    Vector3 trsRespawnPos;//몬스터 리스폰 위치
     private int createCount;
     private float timer = 0.0f;
     private int monsterNumber;
 
+    
     public static GameManager Instance;//싱글톤
+
     private void Awake()
     {
         if (Instance == null)
@@ -49,10 +51,11 @@ public class GameManager : MonoBehaviour
         if (RabbitRespawn == true) { monsterNumber = 0; }
         if (CrazyRabbitRespawn == true) { monsterNumber = 1; }
     }
-
-    private void randomRespawn()
+    private void randomRespawnPos()
     {
-
+        int posX = UnityEngine.Random.Range(-5, 6);
+        int posY = UnityEngine.Random.Range(-5, 6);
+        trsRespawnPos = new Vector3(posX, posY, 0);
     }
     private void checkRespawnTime()
     {
@@ -80,6 +83,7 @@ public class GameManager : MonoBehaviour
         {
             for (int iNum = 0; iNum < maxRespawnCount - curRespawnCount; iNum++)
             {
+                randomRespawnPos();
                 GameObject objEnemy = listEnemys[monsterNumber];
                 GameObject obj = Instantiate(objEnemy, trsRespawnPos, Quaternion.identity, layerEnemy);
                 Debug.Log(curRespawnCount);
@@ -114,4 +118,8 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public int GetMonsterNumber()
+    {
+        return monsterNumber;
+    }
 }

@@ -10,26 +10,30 @@ public class Enemy : MonoBehaviour
         Attack,
         Idle,
         Step,
-        Run,
     }
-
     enemyMotion curMotion = enemyMotion.None;
     enemyMotion beforeMotion = enemyMotion.None;
 
-    [Header("스프라이트 변경")]
-    [SerializeField] private Sprite[] idle;//스프라이트 등록
-    [SerializeField] private bool footCheck;//왼발 오른발 순서 체크
 
+    [Header("스테이터스")]
+    [SerializeField] private float CurHp;
+    [SerializeField] private float MaxHp;
+    [SerializeField] private float Damage;
+    [SerializeField] private float AttackSpeed;
 
     [Header("이동관련")]
     [SerializeField, Tooltip("100이 되면 행동, 변경하지 말 것")] private float checkDelayCount = 100.0f;
     [SerializeField, Tooltip("이동간의 딜레이 시간 설정")] private float moveTime;
     [SerializeField, Tooltip("리스폰 시간")] private float respawnTime;
-   
+
+    [Header("스프라이트 변경")]
+    [SerializeField] private Sprite[] idle;//스프라이트 등록
+    [SerializeField] private bool footCheck;//왼발 오른발 순서 체크
     private float spriteChangeDelay = 0.0f;
     private float ratio = 0.0f;
     private int randomDirNumber;
     private bool isMoving;//이동중인지 체크
+    private bool isAttack;
     private bool checkDelay;//이동 후 딜레이체크 시작,종료 체크
     private bool checkChangeSpriteDelay;
     Vector3 moveVec;
@@ -39,28 +43,111 @@ public class Enemy : MonoBehaviour
     Vector3 after;
     private bool beforeSave;
 
-
+    //[SerializeField] private Sprite sprHit;
+    private Sprite sprDefault;
     SpriteRenderer sr;
+    BoxCollider2D boxCollider2D;
+    Rigidbody2D rigid;
+    Transform checkBox;
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (isAttack == true && collision.gameObject.tag == "Player")
+        {
+            Enemy enemySc = collision.GetComponent<Enemy>();
+            enemySc.SetDamage(Damage);
+            Destroy(gameObject);
+        }
+    }
     private void Awake()
     {
-        sr = gameObject.GetComponent<SpriteRenderer>();
+        CurHp = MaxHp;
+        rigid = GetComponent<Rigidbody2D>();
+        sr = GetComponent<SpriteRenderer>();
+        sprDefault = sr.sprite;
+        boxCollider2D = GetComponent<BoxCollider2D>();
     }
     void Start()
     {
         moveVec = transform.position;
     }
-    public float GetRespawnTime()
+
+    private void Update()
     {
-        return respawnTime;
+        rigid.velocity = Vector3.zero;
     }
-    
-    void Update()
+    void FixedUpdate()
     {
-        softMoving();
+        checkNext();
         moving();
+        softMoving();
         changeSprite();
+
     }
 
+    private void checkNext()
+    {
+        if (checkDelay == false)
+        {
+            getRandomNumber();
+        }
+        if (isMoving == true) { return; }
+        RaycastHit2D[] hit = Physics2D.RaycastAll(boxCollider2D.bounds.center, lookDir, 0.3f);
+        Debug.DrawRay(boxCollider2D.bounds.center, lookDir * 0.3f, Color.red);
+        for (int iNum = 1; iNum < hit.Length; iNum++)
+        {
+            int check = GameManager.Instance.GetMonsterNumber();//몬스터번호0번 토끼일때
+            if (check == 0 && hit[1].transform != null && hit[1].transform.gameObject.layer == LayerMask.NameToLayer("Player"))
+            {
+                run();
+            }
+        }
+    }
+    private void run()
+    {
+        if (lookDir.x == -1 && isMoving == false)
+        {
+            isMoving = true;
+            beforeSave = true;
+            target = new Vector3(transform.position.x + 0.5f, transform.position.y);
+            checkDelay = true;
+            checkChangeSpriteDelay = true;
+            lookDir = Vector3.right;
+            curMotion = enemyMotion.Step;
+        }
+        if (lookDir.x == 1 && isMoving == false)
+        {
+            isMoving = true;
+            beforeSave = true;
+            target = new Vector3(transform.position.x - 0.5f, transform.position.y);
+            checkDelay = true;
+            checkChangeSpriteDelay = true;
+            lookDir = Vector3.left;
+            curMotion = enemyMotion.Step;
+        }
+        if (lookDir.y == 1 && isMoving == false)
+        {
+            isMoving = true;
+            beforeSave = true;
+            target = new Vector3(transform.position.x, transform.position.y - 0.5f);
+            checkDelay = true;
+            checkChangeSpriteDelay = true;
+            lookDir = Vector3.down;
+            curMotion = enemyMotion.Step;
+        }
+        if (lookDir.y == -1 && isMoving == false)
+        {
+            isMoving = true;
+            beforeSave = true;
+            target = new Vector3(transform.position.x, transform.position.y + 0.5f);
+            checkDelay = true;
+            checkChangeSpriteDelay = true;
+            lookDir = Vector3.up;
+            curMotion = enemyMotion.Step;
+        }
+
+        //if체력일정이하 도망
+    }
     private void softMoving()
     {
         if (isMoving == true && beforeSave == true)
@@ -123,7 +210,7 @@ public class Enemy : MonoBehaviour
                     {
                         isMoving = true;
                         beforeSave = true;
-                        target = new Vector3(transform.position.x - 1, transform.position.y);
+                        target = new Vector3(transform.position.x - 0.5f, transform.position.y);
                         checkDelay = true;
                         checkChangeSpriteDelay = true;
                         lookDir = Vector3.left;
@@ -135,7 +222,7 @@ public class Enemy : MonoBehaviour
                     {
                         isMoving = true;
                         beforeSave = true;
-                        target = new Vector3(transform.position.x + 1, transform.position.y);
+                        target = new Vector3(transform.position.x + 0.5f, transform.position.y);
                         checkDelay = true;
                         checkChangeSpriteDelay = true;
                         lookDir = Vector3.right;
@@ -147,7 +234,7 @@ public class Enemy : MonoBehaviour
                     {
                         isMoving = true;
                         beforeSave = true;
-                        target = new Vector3(transform.position.x, transform.position.y + 1);
+                        target = new Vector3(transform.position.x, transform.position.y + 0.5f);
                         checkDelay = true;
                         checkChangeSpriteDelay = true;
                         lookDir = Vector3.up;
@@ -159,13 +246,19 @@ public class Enemy : MonoBehaviour
                     {
                         isMoving = true;
                         beforeSave = true;
-                        target = new Vector3(transform.position.x, transform.position.y - 1);
+                        target = new Vector3(transform.position.x, transform.position.y - 0.5f);
                         checkDelay = true;
                         checkChangeSpriteDelay = true;
                         lookDir = Vector3.down;
                         curMotion = enemyMotion.Step;
                         break;
                     }
+                case 4:
+                    checkDelay = true;
+                    break;
+                case 5:
+                    checkDelay = true;
+                    break;
             }
         }
         checkActionDelay(moveTime);
@@ -190,7 +283,13 @@ public class Enemy : MonoBehaviour
     }
     private void getRandomNumber()
     {
-        randomDirNumber = Random.Range(0, 4);
+        randomDirNumber = Random.Range(0, 6);
+        //if (randomDirNumber == 0) Debug.Log("<color=aqua>next left</color>");
+        //if (randomDirNumber == 1) Debug.Log("<color=aqua>next right</color>");
+        //if (randomDirNumber == 2) Debug.Log("<color=aqua>next up</color>");
+        //if (randomDirNumber == 3) Debug.Log("<color=aqua>next down</color>");
+        //if (randomDirNumber == 4) Debug.Log("<color=aqua>next rest</color>");
+        //if (randomDirNumber == 5) Debug.Log("<color=aqua>next rest</color>");
     }
     private void changeSprite()
     {
@@ -299,5 +398,21 @@ public class Enemy : MonoBehaviour
                     break;
                 }
         }
+    }
+    public void SetDamage(float _damage)
+    {
+        Debug.Log($"Damage = {_damage}");
+        CurHp -= _damage;
+        Debug.Log($"CurHp = {CurHp}");
+        //sr.color = new Color(1, 1, 1, 0.2f);
+        //Invoke("setSpriteDefault", 0.1f);
+    }
+    public float GetRespawnTime()
+    {
+        return respawnTime;
+    }
+    private void setSpriteDefault()
+    {
+        sr.sprite = sprDefault;
     }
 }

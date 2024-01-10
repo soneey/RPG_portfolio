@@ -2,18 +2,16 @@ using UnityEngine;
 
 public class TriggerCheck : MonoBehaviour
 {
-    [SerializeField] private Player.playerMotion Attack;
-    Player player;
-    Vector3 moveVec;
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        player.TriggerEnter(Attack, collision);
+        //player.TriggerEnter(Attack, collision);
+        Debug.Log(collision.name);
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        player.TriggerExit(Attack, collision);
+        //player.TriggerExit(Attack, collision);
     }
     private void Awake()
     {
@@ -21,7 +19,7 @@ public class TriggerCheck : MonoBehaviour
     }
     void Start()
     {
-        player = GetComponentInParent<Player>();
+
     }
 
     //public void OnHitBox(Vector3 _value)

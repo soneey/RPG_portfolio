@@ -10,9 +10,13 @@ public class ChasePlayer : MonoBehaviour
 
     void Update()
     {
-        chasePlayer();
+
     }
 
+    private void LateUpdate()
+    {
+        chasePlayer();
+    }
     /// <summary>
     /// 카메라가 플레이어를 따라다니는 기능
     /// </summary>
