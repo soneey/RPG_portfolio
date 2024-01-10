@@ -65,7 +65,7 @@ public class Player : MonoBehaviour
         {
             Debug.Log(collision.gameObject.tag);
             Enemy enemySc = collision.GetComponent<Enemy>();
-            enemySc.SetDamage(Damage);
+            enemySc.DamagefromEnemy(Damage);
         }
     }
 
@@ -138,46 +138,94 @@ public class Player : MonoBehaviour
             if (((Input.GetKey(KeyCode.LeftArrow) && boolMoveDelayCheck == false && footCheck == false))
                 || (((Input.GetKey(KeyCode.LeftArrow) && boolMoveDelayCheck == false && footCheck == true))))
             {
-                isMoving = true;
-                beforeSave = true;
-                target = new Vector3(transform.position.x - 0.5f, transform.position.y);
-                boolMoveDelayCheck = true;
-                checkChangeSpriteDelay = true;
                 lookDir = Vector3.left;
-                curMotion = playerMotion.Step;
+                curMotion = playerMotion.Idle;
+                RaycastHit2D[] hit = Physics2D.RaycastAll(boxCollider2D.bounds.center, lookDir, 0.5f);
+                Debug.DrawRay(boxCollider2D.bounds.center, lookDir * 0.5f, Color.blue);
+                //for (int i = 0; i < hit.Length; i++)
+                //{
+                //    Debug.Log(hit[i].transform.name);
+                //}
+                if (hit.Length != 1)
+                {
+                    playerMotionChange();
+                    return;
+                }
+                else
+                {
+                    isMoving = true;
+                    beforeSave = true;
+                    target = new Vector3(transform.position.x - 0.5f, transform.position.y);
+                    boolMoveDelayCheck = true;
+                    checkChangeSpriteDelay = true;
+                    curMotion = playerMotion.Step;
+                }
             }
             if (((Input.GetKey(KeyCode.RightArrow) && boolMoveDelayCheck == false && footCheck == false))
                 || ((Input.GetKey(KeyCode.RightArrow) && boolMoveDelayCheck == false && footCheck == true)))
             {
-                isMoving = true;
-                beforeSave = true;
-                target = new Vector3(transform.position.x + 0.5f, transform.position.y);
-                boolMoveDelayCheck = true;
-                checkChangeSpriteDelay = true;
                 lookDir = Vector3.right;
-                curMotion = playerMotion.Step;
+                curMotion = playerMotion.Idle;
+                RaycastHit2D[] hit = Physics2D.RaycastAll(boxCollider2D.bounds.center, lookDir, 0.5f);
+                Debug.DrawRay(boxCollider2D.bounds.center, lookDir * 0.5f, Color.blue);
+                if (hit.Length != 1)
+                {
+                    playerMotionChange();
+                    return;
+                }
+                else
+                {
+                    isMoving = true;
+                    beforeSave = true;
+                    target = new Vector3(transform.position.x + 0.5f, transform.position.y);
+                    boolMoveDelayCheck = true;
+                    checkChangeSpriteDelay = true;
+                    curMotion = playerMotion.Step;
+                }
             }
             if (((Input.GetKey(KeyCode.UpArrow) && boolMoveDelayCheck == false && footCheck == false))
                 || ((Input.GetKey(KeyCode.UpArrow) && boolMoveDelayCheck == false && footCheck == true)))
             {
-                isMoving = true;
-                beforeSave = true;
-                target = new Vector3(transform.position.x, transform.position.y + 0.5f);
-                boolMoveDelayCheck = true;
-                checkChangeSpriteDelay = true;
                 lookDir = Vector3.up;
-                curMotion = playerMotion.Step;
+                curMotion = playerMotion.Idle;
+                RaycastHit2D[] hit = Physics2D.RaycastAll(boxCollider2D.bounds.center, lookDir, 0.5f);
+                Debug.DrawRay(boxCollider2D.bounds.center, lookDir * 0.5f, Color.blue);
+                if (hit.Length != 1)
+                {
+                    playerMotionChange();
+                    return;
+                }
+                else
+                {
+                    isMoving = true;
+                    beforeSave = true;
+                    target = new Vector3(transform.position.x, transform.position.y + 0.5f);
+                    boolMoveDelayCheck = true;
+                    checkChangeSpriteDelay = true;
+                    curMotion = playerMotion.Step;
+                }
             }
             if (((Input.GetKey(KeyCode.DownArrow) && boolMoveDelayCheck == false && footCheck == false))
                 || ((Input.GetKey(KeyCode.DownArrow) && boolMoveDelayCheck == false && footCheck == true)))
             {
-                isMoving = true;
-                beforeSave = true;
-                target = new Vector3(transform.position.x, transform.position.y - 0.5f);
-                boolMoveDelayCheck = true;
-                checkChangeSpriteDelay = true;
                 lookDir = Vector3.down;
-                curMotion = playerMotion.Step;
+                curMotion = playerMotion.Idle;
+                RaycastHit2D[] hit = Physics2D.RaycastAll(boxCollider2D.bounds.center, lookDir, 0.5f);
+                Debug.DrawRay(boxCollider2D.bounds.center, lookDir * 0.5f, Color.blue);
+                if (hit.Length != 1)
+                {
+                    playerMotionChange();
+                    return;
+                }
+                else
+                {
+                    isMoving = true;
+                    beforeSave = true;
+                    target = new Vector3(transform.position.x, transform.position.y - 0.5f);
+                    boolMoveDelayCheck = true;
+                    checkChangeSpriteDelay = true;
+                    curMotion = playerMotion.Step;
+                }
             }
             //curMotion = curMotion == playerMotion.FrontDirLeftFoot ? playerMotion.FrontDirRightFoot : playerMotion.FrontDirLeftFoot;
             checkMoveDelay(moveSpeed);//플레이어의 이동 딜레이
@@ -240,28 +288,28 @@ public class Player : MonoBehaviour
     {
         if ((Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.LeftArrow)) || (Input.GetKey(KeyCode.RightShift) && Input.GetKeyDown(KeyCode.LeftArrow)))
         {
-            lookDir = transform.position;
+            //lookDir = transform.position;
             lookDir = Vector3.left;
             curMotion = playerMotion.Idle;
             playerMotionChange();
         }
         if ((Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.RightArrow)) || (Input.GetKey(KeyCode.RightShift) && Input.GetKeyDown(KeyCode.RightArrow)))
         {
-            lookDir = transform.position;
+            //lookDir = transform.position;
             lookDir = Vector3.right;
             curMotion = playerMotion.Idle;
             playerMotionChange();
         }
         if ((Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.UpArrow)) || (Input.GetKey(KeyCode.RightShift) && Input.GetKeyDown(KeyCode.UpArrow)))
         {
-            lookDir = transform.position;
+            //lookDir = transform.position;
             lookDir = Vector3.up;
             curMotion = playerMotion.Idle;
             playerMotionChange();
         }
         if ((Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.DownArrow)) || (Input.GetKey(KeyCode.RightShift) && Input.GetKeyDown(KeyCode.DownArrow)))
         {
-            lookDir = transform.position;
+            //lookDir = transform.position;
             lookDir = Vector3.down;
             curMotion = playerMotion.Idle;
             playerMotionChange();

@@ -10,6 +10,7 @@ public class Enemy : MonoBehaviour
         Attack,
         Idle,
         Step,
+        Dead,
     }
     enemyMotion curMotion = enemyMotion.None;
     enemyMotion beforeMotion = enemyMotion.None;
@@ -44,7 +45,7 @@ public class Enemy : MonoBehaviour
     private bool beforeSave;
 
     //[SerializeField] private Sprite sprHit;
-    private Sprite sprDefault;
+    private Color sprDefault;
     SpriteRenderer sr;
     BoxCollider2D boxCollider2D;
     Rigidbody2D rigid;
@@ -54,9 +55,9 @@ public class Enemy : MonoBehaviour
     {
         if (isAttack == true && collision.gameObject.tag == "Player")
         {
-            Enemy enemySc = collision.GetComponent<Enemy>();
-            enemySc.SetDamage(Damage);
-            Destroy(gameObject);
+            //Enemy enemySc = collision.GetComponent<Enemy>();
+            //enemySc.DamagefromEnemy(Damage);
+            //Destroy(gameObject);
         }
     }
     private void Awake()
@@ -64,7 +65,7 @@ public class Enemy : MonoBehaviour
         CurHp = MaxHp;
         rigid = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
-        sprDefault = sr.sprite;
+        sprDefault = sr.color;
         boxCollider2D = GetComponent<BoxCollider2D>();
     }
     void Start()
@@ -82,7 +83,7 @@ public class Enemy : MonoBehaviour
         moving();
         softMoving();
         changeSprite();
-
+        dead();
     }
 
     private void checkNext()
@@ -99,10 +100,13 @@ public class Enemy : MonoBehaviour
             int check = GameManager.Instance.GetMonsterNumber();//몬스터번호0번 토끼일때
             if (check == 0 && hit[1].transform != null && hit[1].transform.gameObject.layer == LayerMask.NameToLayer("Player"))
             {
+                Debug.Log(hit[1].transform.name);
                 run();
             }
         }
     }
+
+
     private void run()
     {
         if (lookDir.x == -1 && isMoving == false)
@@ -208,49 +212,93 @@ public class Enemy : MonoBehaviour
             {
                 case 0:
                     {
-                        isMoving = true;
-                        beforeSave = true;
-                        target = new Vector3(transform.position.x - 0.5f, transform.position.y);
-                        checkDelay = true;
-                        checkChangeSpriteDelay = true;
                         lookDir = Vector3.left;
-                        curMotion = enemyMotion.Step;
+                        curMotion = enemyMotion.Idle;
+                        enemyMotionChange();
+                        RaycastHit2D[] hit = Physics2D.RaycastAll(boxCollider2D.bounds.center, lookDir, 0.3f);
+                        Debug.DrawRay(boxCollider2D.bounds.center, lookDir * 0.3f, Color.red);
+                        if (hit.Length != 1)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            isMoving = true;
+                            beforeSave = true;
+                            target = new Vector3(transform.position.x - 0.5f, transform.position.y);
+                            checkDelay = true;
+                            checkChangeSpriteDelay = true;
+                            curMotion = enemyMotion.Step;
+                        }
                         break;
 
                     }
                 case 1:
                     {
-                        isMoving = true;
-                        beforeSave = true;
-                        target = new Vector3(transform.position.x + 0.5f, transform.position.y);
-                        checkDelay = true;
-                        checkChangeSpriteDelay = true;
                         lookDir = Vector3.right;
-                        curMotion = enemyMotion.Step;
+                        curMotion = enemyMotion.Idle;
+                        enemyMotionChange();
+                        RaycastHit2D[] hit = Physics2D.RaycastAll(boxCollider2D.bounds.center, lookDir, 0.3f);
+                        Debug.DrawRay(boxCollider2D.bounds.center, lookDir * 0.3f, Color.red);
+                        if (hit.Length != 1)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            isMoving = true;
+                            beforeSave = true;
+                            target = new Vector3(transform.position.x + 0.5f, transform.position.y);
+                            checkDelay = true;
+                            checkChangeSpriteDelay = true;
+                            curMotion = enemyMotion.Step;
+                        }
                         break;
 
                     }
                 case 2:
                     {
-                        isMoving = true;
-                        beforeSave = true;
-                        target = new Vector3(transform.position.x, transform.position.y + 0.5f);
-                        checkDelay = true;
-                        checkChangeSpriteDelay = true;
                         lookDir = Vector3.up;
-                        curMotion = enemyMotion.Step;
+                        curMotion = enemyMotion.Idle;
+                        enemyMotionChange();
+                        RaycastHit2D[] hit = Physics2D.RaycastAll(boxCollider2D.bounds.center, lookDir, 0.3f);
+                        Debug.DrawRay(boxCollider2D.bounds.center, lookDir * 0.3f, Color.red);
+                        if (hit.Length != 1)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            isMoving = true;
+                            beforeSave = true;
+                            target = new Vector3(transform.position.x, transform.position.y + 0.5f);
+                            checkDelay = true;
+                            checkChangeSpriteDelay = true;
+                            curMotion = enemyMotion.Step;
+                        }
                         break;
 
                     }
                 case 3:
                     {
-                        isMoving = true;
-                        beforeSave = true;
-                        target = new Vector3(transform.position.x, transform.position.y - 0.5f);
-                        checkDelay = true;
-                        checkChangeSpriteDelay = true;
                         lookDir = Vector3.down;
-                        curMotion = enemyMotion.Step;
+                        curMotion = enemyMotion.Idle;
+                        enemyMotionChange();
+                        RaycastHit2D[] hit = Physics2D.RaycastAll(boxCollider2D.bounds.center, lookDir, 0.3f);
+                        Debug.DrawRay(boxCollider2D.bounds.center, lookDir * 0.3f, Color.red);
+                        if (hit.Length != 1)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            isMoving = true;
+                            beforeSave = true;
+                            target = new Vector3(transform.position.x, transform.position.y - 0.5f);
+                            checkDelay = true;
+                            checkChangeSpriteDelay = true;
+                            curMotion = enemyMotion.Step;
+                        }
                         break;
                     }
                 case 4:
@@ -399,13 +447,43 @@ public class Enemy : MonoBehaviour
                 }
         }
     }
-    public void SetDamage(float _damage)
+    private void dead()
+    {
+        if (CurHp > 0) { return; }
+        else
+        {
+            allDelayCheck = true;
+            Destroy(gameObject);
+        }
+    }
+    float allDelay = 100.0f;
+    bool allDelayCheck;
+    private void checkAllDelay(float _value)
+    {
+        if (allDelayCheck == false) { return; }
+        if (allDelay == 100.0f && allDelayCheck == true)
+        {
+            allDelay -= _value;
+        }
+        if (allDelay != 100.0f && allDelayCheck == true)
+        {
+            allDelay += Time.deltaTime;
+        }
+        if (allDelay > 100)
+        {
+            allDelay = 100.0f;
+            allDelayCheck = false;
+        }
+
+    }
+    public void DamagefromEnemy(float _damage)
     {
         Debug.Log($"Damage = {_damage}");
         CurHp -= _damage;
         Debug.Log($"CurHp = {CurHp}");
-        //sr.color = new Color(1, 1, 1, 0.2f);
-        //Invoke("setSpriteDefault", 0.1f);
+        sprDefault = sr.color;
+        sr.color = new Color(1, 1, 1, 0.2f);
+        Invoke("setSpriteDefault", 0.1f);
     }
     public float GetRespawnTime()
     {
@@ -413,6 +491,6 @@ public class Enemy : MonoBehaviour
     }
     private void setSpriteDefault()
     {
-        sr.sprite = sprDefault;
+        sr.color = sprDefault;
     }
 }
