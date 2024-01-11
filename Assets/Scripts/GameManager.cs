@@ -22,7 +22,11 @@ public class GameManager : MonoBehaviour
     private float timer = 0.0f;
     private int monsterNumber;
 
-    
+    [SerializeField] GameObject HpGaugeBar;
+    [SerializeField] GameObject objPlayer;
+    [SerializeField] GameObject[] objEnemy;
+
+
     public static GameManager Instance;//ΩÃ±€≈Ê
 
     private void Awake()
@@ -121,5 +125,18 @@ public class GameManager : MonoBehaviour
     public int GetMonsterNumber()
     {
         return monsterNumber;
+    }
+
+    public GameObject GetHpGaugeBar()
+    {
+        return HpGaugeBar;
+    }
+    public GameObject GetPlayerGameObject()
+    {
+        return objPlayer;
+    }
+    public GameObject GetEnemyGameObject(int _value) 
+    {
+        return objEnemy[_value];
     }
 }

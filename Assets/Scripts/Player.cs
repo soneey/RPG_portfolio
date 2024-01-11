@@ -26,6 +26,7 @@ public class Player : MonoBehaviour
     [SerializeField] private float CurHp;
     [SerializeField] private float MaxHp;
     [SerializeField] private float Damage;
+    private Vector2 trsGaugeBarPos;
 
     [Header("플레이어 행동딜레이")]
     [SerializeField] private float moveDelayCheck = 100.0f;
@@ -81,6 +82,7 @@ public class Player : MonoBehaviour
     void Start()
     {
         GameManager manager = GameManager.Instance;
+        createGaugeBar();
     }
 
     private void Update()
@@ -355,6 +357,12 @@ public class Player : MonoBehaviour
             isAttack = false;
             destroyCheckBox();
         }
+    }
+    private void createGaugeBar()
+    {
+        trsGaugeBarPos = transform.localPosition;
+        GameObject objHpGaugeBar = GameManager.Instance.GetHpGaugeBar(); 
+        GameObject obj = Instantiate(objHpGaugeBar, trsGaugeBarPos, Quaternion.identity, player);
     }
     private void createCheckBoxPos()
     {

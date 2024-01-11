@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -37,6 +38,7 @@ public class Enemy : MonoBehaviour
     private bool isAttack;
     private bool checkDelay;//이동 후 딜레이체크 시작,종료 체크
     private bool checkChangeSpriteDelay;
+    private Vector2 trsGaugeBarPos;
     Vector3 moveVec;
     Vector3 lookDir;
     Vector3 target;
@@ -67,6 +69,7 @@ public class Enemy : MonoBehaviour
         sr = GetComponent<SpriteRenderer>();
         sprDefault = sr.color;
         boxCollider2D = GetComponent<BoxCollider2D>();
+        createGaugeBar();
     }
     void Start()
     {
@@ -331,7 +334,7 @@ public class Enemy : MonoBehaviour
     }
     private void getRandomNumber()
     {
-        randomDirNumber = Random.Range(0, 6);
+        randomDirNumber = UnityEngine.Random.Range(0, 6);
         //if (randomDirNumber == 0) Debug.Log("<color=aqua>next left</color>");
         //if (randomDirNumber == 1) Debug.Log("<color=aqua>next right</color>");
         //if (randomDirNumber == 2) Debug.Log("<color=aqua>next up</color>");
@@ -456,6 +459,14 @@ public class Enemy : MonoBehaviour
             Destroy(gameObject);
         }
     }
+    [SerializeField] GameObject HpGaugeBar;
+    private void createGaugeBar()
+    {
+        trsGaugeBarPos = transform.localPosition;
+        GameObject objHpGaugeBar = HpGaugeBar;
+        GameObject obj = Instantiate(objHpGaugeBar, trsGaugeBarPos, Quaternion.identity);
+    }
+
     float allDelay = 100.0f;
     bool allDelayCheck;
     private void checkAllDelay(float _value)
