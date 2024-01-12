@@ -1,27 +1,56 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GaugeBar : MonoBehaviour
 {
-    private Transform trsPlayer;
-    private Transform trsEnemy;
+    private Transform trs;
+    [SerializeField] private Image imgFrontHp;
+    [SerializeField] private Image imgMidHp;
     private void Awake()
+    {
+
+    }
+    void Start()
     {
 
     }
     private void Update()
     {
-        checkEnemyPos();
+        checkHp();
+        SetHp();
+        //isDestroying();
     }
-    void Start()
+    private void checkHp()
     {
-        GameManager manager = GameManager.Instance;
-        GameObject obj = manager.GetPlayerGameObject();//플레이어
-        Player objSc = obj.GetComponent<Player>();
-        trsPlayer = obj.transform;
+        float amountFront = imgFrontHp.fillAmount;
+        float amountMid = imgMidHp.fillAmount;
+
+        if (amountFront < amountMid)//mid가 깎여야 함
+        {
+            imgMidHp.fillAmount -= Time.deltaTime * 0.5f;
+            if (imgMidHp.fillAmount <= imgFrontHp.fillAmount)
+            {
+                imgMidHp.fillAmount = imgFrontHp.fillAmount;
+            }
+            else if (amountFront > amountMid)
+            {
+                imgMidHp.fillAmount = imgFrontHp.fillAmount;
+            }
+        }
     }
-    private void checkEnemyPos()
+    private void isDestroying()
     {
-        if (trsPlayer == null) { return; }
-        transform.position = trsPlayer.position;
+        if (imgMidHp.fillAmount <= 0)
+        {
+            Destroy(gameObject);
+        }
     }
+    public void SetHp(float _curHp, float _maxHp)
+    {
+        imgFrontHp.fillAmount = (float)_curHp / _maxHp;
+    }
+    //public void SetHp(float _curHp, float _maxHp)
+    //{
+    //    imgFrontHp.fillAmount = (float)_curHp / _maxHp;
+    //}
 }

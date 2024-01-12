@@ -18,10 +18,10 @@ public class Enemy : MonoBehaviour
 
 
     [Header("스테이터스")]
-    [SerializeField] private float CurHp;
-    [SerializeField] private float MaxHp;
-    [SerializeField] private float Damage;
-    [SerializeField] private float AttackSpeed;
+    [SerializeField] private float curHp;
+    [SerializeField] private float maxHp;
+    [SerializeField] private float damage;
+    [SerializeField] private float attackSpeed;
 
     [Header("이동관련")]
     [SerializeField, Tooltip("100이 되면 행동, 변경하지 말 것")] private float checkDelayCount = 100.0f;
@@ -51,8 +51,13 @@ public class Enemy : MonoBehaviour
     SpriteRenderer sr;
     BoxCollider2D boxCollider2D;
     Rigidbody2D rigid;
-    Transform checkBox;
 
+
+    private void OnValidate()
+    {
+        if (GaugeBar != null)
+            GaugeBar.SetHp(curHp, maxHp);
+    }
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (isAttack == true && collision.gameObject.tag == "Player")
@@ -64,18 +69,18 @@ public class Enemy : MonoBehaviour
     }
     private void Awake()
     {
-        CurHp = MaxHp;
+        curHp = maxHp;
         rigid = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
         sprDefault = sr.color;
         boxCollider2D = GetComponent<BoxCollider2D>();
-        createGaugeBar();
+        //HpGaugeBar = GetComponent<EnemyGaugeBar>();
     }
     void Start()
     {
         moveVec = transform.position;
+        createGaugeBar();
     }
-
     private void Update()
     {
         rigid.velocity = Vector3.zero;
@@ -87,6 +92,14 @@ public class Enemy : MonoBehaviour
         softMoving();
         changeSprite();
         dead();
+    }
+    [SerializeField] GameObject HpGaugeBar;
+    private void createGaugeBar()
+    {
+        trsGaugeBarPos = transform.localPosition;
+        GameObject objHpGaugeBar = HpGaugeBar;
+        GameObject obj = Instantiate(objHpGaugeBar, trsGaugeBarPos, Quaternion.identity, transform.transform);
+        obj.GetComponent<EnemyGaugeBar>();
     }
 
     private void checkNext()
@@ -452,20 +465,14 @@ public class Enemy : MonoBehaviour
     }
     private void dead()
     {
-        if (CurHp > 0) { return; }
+        if (curHp > 0) { return; }
         else
         {
             allDelayCheck = true;
             Destroy(gameObject);
         }
     }
-    [SerializeField] GameObject HpGaugeBar;
-    private void createGaugeBar()
-    {
-        trsGaugeBarPos = transform.localPosition;
-        GameObject objHpGaugeBar = HpGaugeBar;
-        GameObject obj = Instantiate(objHpGaugeBar, trsGaugeBarPos, Quaternion.identity);
-    }
+   
 
     float allDelay = 100.0f;
     bool allDelayCheck;
@@ -490,8 +497,8 @@ public class Enemy : MonoBehaviour
     public void DamagefromEnemy(float _damage)
     {
         Debug.Log($"Damage = {_damage}");
-        CurHp -= _damage;
-        Debug.Log($"CurHp = {CurHp}");
+        curHp -= _damage;
+        Debug.Log($"CurHp = {curHp}");
         sprDefault = sr.color;
         sr.color = new Color(1, 1, 1, 0.2f);
         Invoke("setSpriteDefault", 0.1f);
@@ -503,5 +510,12 @@ public class Enemy : MonoBehaviour
     private void setSpriteDefault()
     {
         sr.color = sprDefault;
+    }
+    private GaugeBar GaugeBar;
+  
+    public void SetHp(GaugeBar _value)
+    {
+        GaugeBar = _value;
+        GaugeBar.SetHp(curHp, maxHp);
     }
 }

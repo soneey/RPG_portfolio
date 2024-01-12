@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -24,7 +25,7 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] GameObject HpGaugeBar;
     [SerializeField] GameObject objPlayer;
-    [SerializeField] GameObject[] objEnemy;
+    GameObject objEnemy;
 
 
     public static GameManager Instance;//싱글톤
@@ -42,7 +43,7 @@ public class GameManager : MonoBehaviour
     }
     void Start()
     {
-
+        
     }
 
     void Update()
@@ -90,7 +91,7 @@ public class GameManager : MonoBehaviour
                 randomRespawnPos();
                 GameObject objEnemy = listEnemys[monsterNumber];
                 GameObject obj = Instantiate(objEnemy, trsRespawnPos, Quaternion.identity, layerEnemy);
-                Debug.Log(curRespawnCount);
+                obj.GetComponent<EnemyGaugeBar>();
             }
         }
         if (layerEnemy.childCount == maxRespawnCount)
@@ -98,9 +99,6 @@ public class GameManager : MonoBehaviour
             createMonster = false;
         }
     }
-
-
-
 
     /// <summary>
     /// Player, Enemy의 모든 행동 후 딜레이를 관리하는 기능
@@ -126,17 +124,6 @@ public class GameManager : MonoBehaviour
     {
         return monsterNumber;
     }
+    
 
-    public GameObject GetHpGaugeBar()
-    {
-        return HpGaugeBar;
-    }
-    public GameObject GetPlayerGameObject()
-    {
-        return objPlayer;
-    }
-    public GameObject GetEnemyGameObject(int _value) 
-    {
-        return objEnemy[_value];
-    }
 }

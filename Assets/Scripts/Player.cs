@@ -23,9 +23,9 @@ public class Player : MonoBehaviour
     playerWeapon curWeapon = playerWeapon.None;
 
     [Header("플레이어 스테이터스")]
-    [SerializeField] private float CurHp;
-    [SerializeField] private float MaxHp;
-    [SerializeField] private float Damage;
+    [SerializeField] private float curHp;
+    [SerializeField] private float maxHp;
+    [SerializeField] private float damage;
     private Vector2 trsGaugeBarPos;
 
     [Header("플레이어 행동딜레이")]
@@ -59,21 +59,25 @@ public class Player : MonoBehaviour
     Rigidbody2D rigid;
     SpriteRenderer sr;
 
-
+    private void OnValidate()
+    {
+        if (GaugeBar != null)
+            GaugeBar.SetHp(curHp, maxHp);
+    }
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (isAttack == true && collision.gameObject.tag == "Enemy")
         {
             Debug.Log(collision.gameObject.tag);
             Enemy enemySc = collision.GetComponent<Enemy>();
-            enemySc.DamagefromEnemy(Damage);
+            enemySc.DamagefromEnemy(damage);
         }
     }
 
 
     private void Awake()
     {
-        CurHp = MaxHp;
+        curHp = maxHp;
         rigid = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
         boxCollider2D = GetComponent<BoxCollider2D>();
@@ -352,18 +356,21 @@ public class Player : MonoBehaviour
         }
         if (attackDelayCheck > 100)
         {
+            destroyCheckBox();
             attackDelayCheck = 100.0f;
             boolAttackDelayCheck = false;
             isAttack = false;
-            destroyCheckBox();
         }
     }
+    [SerializeField] GameObject HpGaugeBar;
     private void createGaugeBar()
     {
         trsGaugeBarPos = transform.localPosition;
-        GameObject objHpGaugeBar = GameManager.Instance.GetHpGaugeBar(); 
+        GameObject objHpGaugeBar = HpGaugeBar; 
         GameObject obj = Instantiate(objHpGaugeBar, trsGaugeBarPos, Quaternion.identity, player);
+        obj.GetComponent<GaugeBar>();
     }
+
     private void createCheckBoxPos()
     {
         Vector2 check = transform.localPosition;
@@ -427,7 +434,7 @@ public class Player : MonoBehaviour
         {
             sr.sprite = idle[9];
         }
-        Transform checkBox = player.GetChild(0);
+        Transform checkBox = player.GetChild(1);
         Destroy(checkBox.gameObject);
     }
     private void setDamage()
@@ -499,5 +506,14 @@ public class Player : MonoBehaviour
                 }
         }
     }
+
+    private GaugeBar GaugeBar;
+    
+    public void SetHp(GaugeBar _value)
+    {
+        GaugeBar = _value;
+        GaugeBar.SetHp(curHp, maxHp);
+    }
+    
 }
 
