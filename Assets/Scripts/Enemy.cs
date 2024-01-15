@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.iOS;
 
 public class Enemy : MonoBehaviour
 {
@@ -22,7 +23,6 @@ public class Enemy : MonoBehaviour
     [SerializeField] private float curHp;
     [SerializeField] private float maxHp;
     [SerializeField] private float damage;
-    [SerializeField] private float attackSpeed;
     [SerializeField] private float respawnTime;
 
     [Header("액션")]
@@ -30,7 +30,10 @@ public class Enemy : MonoBehaviour
     [SerializeReference] private float moveSpeed;
     private bool boolMoveDelayCheck;//이동 후 딜레이체크 시작,종료 체크
     [SerializeField] private bool isMoving;//이동중인지 체크
-    private bool isAttack;
+    [SerializeField] private float attackDelayCheck = 100.0f;
+    [SerializeField] private float attackSpeed;
+    private bool boolAttackDelayCheck;
+    [SerializeField] private bool isAttack;
 
 
     [Header("스프라이트 변경")]
@@ -41,11 +44,12 @@ public class Enemy : MonoBehaviour
     private int randomDirNumber;
     private bool checkChangeSpriteDelay;
     private Vector2 trsGaugeBarPos;
-    Vector3 moveVec;
+    Vector3 counterattackDir;
     Vector3 lookDir = Vector3.down;
     Vector3 target;
     Vector3 before;
     Vector3 after;
+    Vector3 moveVec;
     private bool beforeSave;
 
     //[SerializeField] private Sprite sprHit;
@@ -53,7 +57,7 @@ public class Enemy : MonoBehaviour
     SpriteRenderer sr;
     BoxCollider2D boxCollider2D;
     Rigidbody2D rigid;
-
+    [SerializeField] GameObject targetPlayer;
 
     //private void OnValidate()
     //{
@@ -62,17 +66,46 @@ public class Enemy : MonoBehaviour
     //}
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (isAttack == true && collision.gameObject.tag == "HitBox")
+        if (collision.gameObject.tag == "HitBox")
         {
-            //Enemy enemySc = collision.GetComponent<Enemy>();
-            //enemySc.DamagefromEnemy(Damage);
-            //Destroy(gameObject);
+            Debug.Log("counterattack Player");
+            Vector2 targerDir;
+            Transform obj = collision.gameObject.transform.parent;
+            Player objSc = obj.GetComponent<Player>();
+            targetPlayer = obj.gameObject;
+            targerDir = objSc.curLookDir();
+            Debug.Log(targerDir);
+            Debug.Log(collision.gameObject.transform.parent.name);
+
+            if (targerDir.x == -1)
+            {
+                lookDir = Vector3.right;
+                sr.sprite = idle[3];
+            }
+            if (targerDir.x == 1)
+            {
+                lookDir = Vector3.left;
+                sr.sprite = idle[0];
+            }
+            if (targerDir.y == -1)
+            {
+                lookDir = Vector3.up;
+                sr.sprite = idle[6];
+            }
+            if (targerDir.y == 1)
+            {
+                lookDir = Vector3.down;
+                sr.sprite = idle[9];
+            }
+            curMotion = enemyMotion.Attack;
+            objSc.DamagefromEnemy(damage);
+
         }
-        if (collision.gameObject.tag == "Enemy")
-        {
-            Debug.Log("<color=aqua>destroy<color>");
-            Destroy(transform.gameObject);
-        }
+        //if (collision.gameObject.tag == "Enemy")
+        //{
+        //    Debug.Log("<color=aqua>destroy<color>");
+        //    Destroy(transform.gameObject);
+        //}
     }
 
     private void Awake()
@@ -105,9 +138,9 @@ public class Enemy : MonoBehaviour
     {
         getRandomNumber();
         //setMovingTarget();
+        checkMoveDelay(moveSpeed);
         softMoving();
         checkNext();
-        checkMoveDelay(moveSpeed);
         changeSprite();
         dead();
     }
@@ -126,11 +159,11 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    bool allStop;
+    bool boolAllStop;
     bool changeDice = true;
     private void getRandomNumber()
     {
-        if (allStop == true) { return; }
+        if (boolAllStop == true) { return; }
         if (changeDice == false) { return; }
         if (changeDice == true)
         {
@@ -168,7 +201,7 @@ public class Enemy : MonoBehaviour
     bool setTarget;
     private void setMovingTarget()
     {
-        if (allStop == true) { return; }
+        if (boolAllStop == true) { return; }
         if (setTarget == false) { return; }
         //Debug.Log("setMovingTarget");
         switch (randomDirNumber)
@@ -179,6 +212,7 @@ public class Enemy : MonoBehaviour
             case 3: { target = new Vector3(transform.position.x, transform.position.y - 0.5f); break; }
             case 4: break;
         }
+
         before = new Vector3(transform.position.x, transform.position.y);
         beforeSave = true;
         isMoving = true;
@@ -188,7 +222,7 @@ public class Enemy : MonoBehaviour
 
     private void softMoving()
     {
-        if (allStop == true) { return; }
+        if (boolAllStop == true) { return; }
         if (isMoving == false) { return; }
         if (isMoving == true && beforeSave == true && boolMoveDelayCheck == false)
         {
@@ -240,28 +274,25 @@ public class Enemy : MonoBehaviour
     bool nextAction;
     private void checkNext()
     {
-        if (allStop == true) { return; }
+        if (boolAllStop == true) { return; }
         if (nextAction == false) { return; }
         //Debug.Log("checkNext");
         RaycastHit2D[] hit = Physics2D.RaycastAll(boxCollider2D.bounds.center, lookDir, 0.5f);
-        Debug.DrawRay(boxCollider2D.bounds.center, lookDir * 0.5f, Color.cyan);
+        Debug.DrawRay(boxCollider2D.bounds.center, lookDir * 0.5f, Color.blue);
         if (monsterNumber == 0 && hit.Length != 1 && hit[1].transform.gameObject.tag == "Player")
         {
-            allStop = true;
             run();
         }
-        for (int iNum = 1; iNum < hit.Length; iNum++)
+        if (hit.Length != 1 && hit[1].transform.gameObject.tag == "Enemy")
         {
-            if (hit.Length != 1 && transform.position == hit[iNum].transform.position)
-            {
-                Debug.Log("<color=red>Destroy</color>");
-                Destroy(transform.gameObject);
-            }
+            Debug.Log("<color=red>Destroy</color>");
+            Destroy(gameObject);
         }
     }
 
     private void run()
     {
+        allStop();
         before = new Vector3(transform.position.x, transform.position.y);
         if (lookDir == Vector3.left)
         {
@@ -293,22 +324,30 @@ public class Enemy : MonoBehaviour
         }
         isMoving = true;
         beforeSave = true;
+        boolMoveDelayCheck = false;
         Debug.Log("run");
         curMotion = enemyMotion.Idle;
-        allStop = false;
+        boolAllStop = false;
         softMoving();
         changeDice = true;
         //if체력일정이하 도망
     }
-
+    private void allStop()
+    {
+        boolAllStop = true;
+        transform.position = before;
+        changeDice = false;
+        isMoving = false;
+        setTarget = false;
+        nextAction = false;
+        beforeSave = false;
+        boolMoveDelayCheck = false;
+        moveDelayCheck = 100.0f;
+        Debug.Log($"<color=yellow>Reset {moveDelayCheck}</color>");
+    }
     private void checkMoveDelay(float _value)
     {
-        if (allStop == true)
-        {
-            boolMoveDelayCheck = false;
-            moveDelayCheck = 100.0f;
-            return;
-        }
+        if (boolAllStop == true) { return; }
         if (boolMoveDelayCheck == false) { return; }
         if (moveDelayCheck == 100.0f && boolMoveDelayCheck == true)
         {
@@ -445,9 +484,34 @@ public class Enemy : MonoBehaviour
             Destroy(gameObject);
         }
     }
+   
+    private void checkAttackDelay(float _value)
+    {
+        if (boolAllStop == true) { return; }
+        if (boolAttackDelayCheck == false) { return; }
+        if (attackDelayCheck == 100.0f && boolAttackDelayCheck == true)
+        {
+            isAttack = true;
+            attackDelayCheck -= _value;
+        }
+        if (attackDelayCheck != 100.0f && boolAttackDelayCheck == true)
+        {
+            attackDelayCheck += Time.deltaTime;
+        }
+        if (attackDelayCheck > 100)
+        {
+            attackDelayCheck = 100.0f;
+            boolAttackDelayCheck = false;
+            Player targetPlayerSc = targetPlayer.GetComponent<Player>();
+            targetPlayerSc.DamagefromEnemy(damage);
+        }
+    }
     private void counterattack()
     {
         Debug.Log("counterattack");
+
+        allStop();
+
     }
     public void DamagefromEnemy(float _damage)
     {
@@ -459,6 +523,10 @@ public class Enemy : MonoBehaviour
         sr.color = new Color(1, 1, 1, 0.4f);
         counterattack();
         Invoke("setSpriteDefault", 0.2f);
+    }
+    public void DamageToEnemy(float _damage)
+    {
+
     }
     public float GetRespawnTime()
     {

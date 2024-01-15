@@ -58,14 +58,15 @@ public class Player : MonoBehaviour
     BoxCollider2D boxCollider2D;
     Rigidbody2D rigid;
     SpriteRenderer sr;
+    private Color sprDefault;
 
     private GaugeBar gaugeBar;
     GameObject HpGaugeBar;
-    private void OnValidate()
-    {
-        if (gaugeBar != null)
-            gaugeBar.SetHp(curHp, maxHp);
-    }
+    //private void OnValidate()
+    //{
+    //    if (gaugeBar != null)
+    //        gaugeBar.SetHp(curHp, maxHp);
+    //}
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (isAttack == true && collision.gameObject.tag == "Enemy")
@@ -75,13 +76,17 @@ public class Player : MonoBehaviour
             enemySc.DamagefromEnemy(damage);
         }
     }
-
-
+    
+    public Vector2 curLookDir()
+    {
+        return lookDir;
+    }
     private void Awake()
     {
         curHp = maxHp;
         rigid = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
+        sprDefault = sr.color;
         boxCollider2D = GetComponent<BoxCollider2D>();
 
     }
@@ -436,10 +441,7 @@ public class Player : MonoBehaviour
         Transform checkBox = player.GetChild(1);
         Destroy(checkBox.gameObject);
     }
-    private void setDamage()
-    {
-
-    }
+    
     /// <summary>
     /// 플레이어의 모션이 변경되면 스프라이트를 변경
     /// </summary>
@@ -505,12 +507,24 @@ public class Player : MonoBehaviour
                 }
         }
     }
-
+    public void DamagefromEnemy(float _damage)
+    {
+        Debug.Log($"Damage = {_damage}");
+        curHp -= _damage;
+        gaugeBar.SetHp(curHp, maxHp);
+        Debug.Log($"CurHp = {curHp}");
+        sprDefault = sr.color;
+        sr.color = new Color(1, 1, 1, 0.4f);
+        Invoke("setSpriteDefault", 0.2f);
+    }
     public void SetHp(GaugeBar _value)
     {
         gaugeBar = _value;
         gaugeBar.SetHp(curHp, maxHp);
     }
-
+    private void setSpriteDefault()
+    {
+        sr.color = sprDefault;
+    }
 }
 

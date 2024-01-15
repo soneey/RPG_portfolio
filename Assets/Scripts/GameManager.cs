@@ -76,7 +76,7 @@ public class GameManager : MonoBehaviour
         if (layerEnemy.childCount != maxRespawnCount)
         {
             createMonster = true;
-            Debug.Log($"<color=green>Respawn {maxRespawnCount - curRespawnCount}</color>");
+            
             curRespawnCount = layerEnemy.childCount;
         }
     }
@@ -89,6 +89,7 @@ public class GameManager : MonoBehaviour
                 randomRespawnPos();
                 GameObject objEnemy = listEnemys[monsterNumber];
                 GameObject obj = Instantiate(objEnemy, trsRespawnPos, Quaternion.identity, layerEnemy);
+                Debug.Log($"<color=green>Respawn {iNum}</color>");
             }
         }
         if (layerEnemy.childCount == maxRespawnCount)
