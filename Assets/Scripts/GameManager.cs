@@ -23,11 +23,7 @@ public class GameManager : MonoBehaviour
     private float timer = 0.0f;
     private int monsterNumber;
 
-    [SerializeField] GameObject HpGaugeBar;
-    [SerializeField] GameObject objPlayer;
-    GameObject objEnemy;
-
-
+    [SerializeField] GameObject GaugeBar;
     public static GameManager Instance;//싱글톤
 
     private void Awake()
@@ -43,7 +39,7 @@ public class GameManager : MonoBehaviour
     }
     void Start()
     {
-        
+
     }
 
     void Update()
@@ -79,6 +75,8 @@ public class GameManager : MonoBehaviour
     {
         if (layerEnemy.childCount != maxRespawnCount)
         {
+            createMonster = true;
+            Debug.Log($"<color=green>Respawn {maxRespawnCount - curRespawnCount}</color>");
             curRespawnCount = layerEnemy.childCount;
         }
     }
@@ -91,7 +89,6 @@ public class GameManager : MonoBehaviour
                 randomRespawnPos();
                 GameObject objEnemy = listEnemys[monsterNumber];
                 GameObject obj = Instantiate(objEnemy, trsRespawnPos, Quaternion.identity, layerEnemy);
-                obj.GetComponent<EnemyGaugeBar>();
             }
         }
         if (layerEnemy.childCount == maxRespawnCount)
@@ -100,30 +97,14 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Player, Enemy의 모든 행동 후 딜레이를 관리하는 기능
-    /// </summary>
-    /// <param name="_value"></param>
-    private void checkAllDelay(float _value)
-    {
-        if (checkDelayCount != 3000000.0f && checkDelay == false) { return; }
-
-        checkDelayCount = checkDelayCount - _value;
-        if (checkDelay == true && _value != 0)
-        {
-            checkDelayCount += Time.deltaTime;
-        }
-        if (checkDelayCount < 3000000.0f)
-        {
-            checkDelayCount = 3000000.0f;
-            checkDelay = false;
-        }
-    }
-
     public int GetMonsterNumber()
     {
         return monsterNumber;
     }
-    
+    [SerializeField] GameObject objPlayer;
+    public GameObject GetGaugeBar()
+    {
+        return GaugeBar;
+    }
 
 }

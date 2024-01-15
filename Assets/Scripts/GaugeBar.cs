@@ -3,7 +3,6 @@ using UnityEngine.UI;
 
 public class GaugeBar : MonoBehaviour
 {
-    private Transform trs;
     [SerializeField] private Image imgFrontHp;
     [SerializeField] private Image imgMidHp;
     private void Awake()
@@ -12,12 +11,22 @@ public class GaugeBar : MonoBehaviour
     }
     void Start()
     {
+        Transform target = transform.parent;
+        if (target.gameObject.tag == "Player")
+        {
+            Player obj = target.GetComponent<Player>();
+            obj.SetHp(this);
+        }
+        else
+        {
+            Enemy obj = target.GetComponent<Enemy>();
+            obj.SetHp(this);
+        }
 
     }
     private void Update()
     {
         checkHp();
-        SetHp();
         //isDestroying();
     }
     private void checkHp()
@@ -42,15 +51,14 @@ public class GaugeBar : MonoBehaviour
     {
         if (imgMidHp.fillAmount <= 0)
         {
+            Debug.Log("Dead");
             Destroy(gameObject);
         }
     }
+
     public void SetHp(float _curHp, float _maxHp)
     {
         imgFrontHp.fillAmount = (float)_curHp / _maxHp;
     }
-    //public void SetHp(float _curHp, float _maxHp)
-    //{
-    //    imgFrontHp.fillAmount = (float)_curHp / _maxHp;
-    //}
+    
 }

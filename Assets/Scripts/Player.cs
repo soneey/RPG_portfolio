@@ -32,6 +32,7 @@ public class Player : MonoBehaviour
     [SerializeField] private float moveDelayCheck = 100.0f;
     [SerializeField] private float moveSpeed;
     private bool boolMoveDelayCheck;
+    [SerializeField] private bool isMoving;//이동중인지 체크
     [SerializeField] private float attackDelayCheck = 100.0f;
     [SerializeField] private float attackSpeed;
     private bool boolAttackDelayCheck;
@@ -40,7 +41,6 @@ public class Player : MonoBehaviour
 
     [SerializeField] private Sprite[] idle;//move sprite
     [SerializeField] private bool footCheck;
-    [SerializeField] private bool isMoving;//이동중인지 체크
     private float ratio = 0.0f;//이동기능 연출 비율
     Vector3 moveVec;
     Vector3 lookDir;
@@ -59,10 +59,12 @@ public class Player : MonoBehaviour
     Rigidbody2D rigid;
     SpriteRenderer sr;
 
+    private GaugeBar gaugeBar;
+    GameObject HpGaugeBar;
     private void OnValidate()
     {
-        if (GaugeBar != null)
-            GaugeBar.SetHp(curHp, maxHp);
+        if (gaugeBar != null)
+            gaugeBar.SetHp(curHp, maxHp);
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -86,7 +88,11 @@ public class Player : MonoBehaviour
     void Start()
     {
         GameManager manager = GameManager.Instance;
-        createGaugeBar();
+        trsGaugeBarPos = transform.localPosition;
+        HpGaugeBar = manager.GetGaugeBar();
+        GameObject obj = Instantiate(HpGaugeBar, trsGaugeBarPos, Quaternion.identity, player);
+        gaugeBar = obj.GetComponent<GaugeBar>();
+        gaugeBar.SetHp(curHp, maxHp);
     }
 
     private void Update()
@@ -362,14 +368,7 @@ public class Player : MonoBehaviour
             isAttack = false;
         }
     }
-    [SerializeField] GameObject HpGaugeBar;
-    private void createGaugeBar()
-    {
-        trsGaugeBarPos = transform.localPosition;
-        GameObject objHpGaugeBar = HpGaugeBar; 
-        GameObject obj = Instantiate(objHpGaugeBar, trsGaugeBarPos, Quaternion.identity, player);
-        obj.GetComponent<GaugeBar>();
-    }
+    
 
     private void createCheckBoxPos()
     {
@@ -507,13 +506,11 @@ public class Player : MonoBehaviour
         }
     }
 
-    private GaugeBar GaugeBar;
-    
     public void SetHp(GaugeBar _value)
     {
-        GaugeBar = _value;
-        GaugeBar.SetHp(curHp, maxHp);
+        gaugeBar = _value;
+        gaugeBar.SetHp(curHp, maxHp);
     }
-    
+
 }
 

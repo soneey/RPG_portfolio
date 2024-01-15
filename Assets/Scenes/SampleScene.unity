@@ -3231,7 +3231,7 @@ GameObject:
   - component: {fileID: 627781952}
   - component: {fileID: 627781953}
   - component: {fileID: 627781954}
-  m_Layer: 6
+  m_Layer: 0
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -3322,6 +3322,7 @@ MonoBehaviour:
   damage: 5
   moveDelayCheck: 100
   moveSpeed: 0.5
+  isMoving: 0
   attackDelayCheck: 100
   attackSpeed: 0.8
   isAttack: 0
@@ -3339,12 +3340,10 @@ MonoBehaviour:
   - {fileID: -81755770, guid: 4f6eacc660f16f44699115018583694b, type: 3}
   - {fileID: -1730441715, guid: 4f6eacc660f16f44699115018583694b, type: 3}
   footCheck: 0
-  isMoving: 0
   listCheckBox:
   - {fileID: 3466526708776603500, guid: 1b8acd7ab95e3124c91a3eb28d6b88b5, type: 3}
   player: {fileID: 627781950}
   spriteChangeDelay: 0
-  HpGaugeBar: {fileID: 6285566339998268517, guid: 3a4a1a5cfc1931540bee3235cc8e5587, type: 3}
 --- !u!61 &627781953
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -3776,15 +3775,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   checkDelayCount: 3000000
-  createMonster: 0
-  maxRespawnCount: 15
-  RabbitRespawn: 0
+  createMonster: 1
+  maxRespawnCount: 30
+  RabbitRespawn: 1
   CrazyRabbitRespawn: 0
   listEnemys:
   - {fileID: 259016454561856218, guid: 77e7999015ca4624d9c15b78093fa10f, type: 3}
   - {fileID: 259016454561856218, guid: 3d87a7a5c6e2d8741a6dac3433fb345d, type: 3}
   layerEnemy: {fileID: 309685067}
-  HpGaugeBar: {fileID: 6285566339998268517, guid: 3a4a1a5cfc1931540bee3235cc8e5587, type: 3}
+  GaugeBar: {fileID: 6285566339998268517, guid: 3a4a1a5cfc1931540bee3235cc8e5587, type: 3}
   objPlayer: {fileID: 627781947}
 --- !u!4 &1801840423
 Transform:

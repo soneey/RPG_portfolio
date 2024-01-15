@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 4220922364689032324}
   - component: {fileID: 6154631874330280064}
   - component: {fileID: 2068186134797849456}
-  - component: {fileID: 8091129750262986496}
   m_Layer: 0
   m_Name: Monster_1
   m_TagString: Enemy
@@ -100,13 +99,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 791d0b071c9ebb840a231d82edfcd978, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  monsterNumber: 1
   curHp: 0
-  maxHp: 100
+  maxHp: 0
   damage: 10
   attackSpeed: 0.3
-  checkDelayCount: 100
-  moveTime: 3
   respawnTime: 300
+  moveDelayCheck: 100
+  moveSpeed: 5
+  isMoving: 0
   idle:
   - {fileID: 701283455, guid: f1e81b513a64fb24f800439041973e58, type: 3}
   - {fileID: -2124490486, guid: f1e81b513a64fb24f800439041973e58, type: 3}
@@ -121,7 +122,7 @@ MonoBehaviour:
   - {fileID: -999159610, guid: f1e81b513a64fb24f800439041973e58, type: 3}
   - {fileID: 1954891261, guid: f1e81b513a64fb24f800439041973e58, type: 3}
   footCheck: 0
-  HpGaugeBar: {fileID: 6285566339998268517, guid: 3a4a1a5cfc1931540bee3235cc8e5587, type: 3}
+  ratio: 0
 --- !u!61 &6154631874330280064
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -194,15 +195,3 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 7
---- !u!114 &8091129750262986496
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 259016454561856218}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2bba8d86d10dd944c8485a3d1b59e56d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
