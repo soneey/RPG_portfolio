@@ -87,6 +87,7 @@ public class GameManager : MonoBehaviour
             for (int iNum = 0; iNum < maxRespawnCount - curRespawnCount; iNum++)
             {
                 randomRespawnPos();
+                Debug.Log(trsRespawnPos);
                 GameObject objEnemy = listEnemys[monsterNumber];
                 GameObject obj = Instantiate(objEnemy, trsRespawnPos, Quaternion.identity, layerEnemy);
                 Debug.Log($"<color=green>Respawn {iNum}</color>");

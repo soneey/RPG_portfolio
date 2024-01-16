@@ -71,7 +71,6 @@ public class Player : MonoBehaviour
     {
         if (isAttack == true && collision.gameObject.tag == "Enemy")
         {
-            Debug.Log(collision.gameObject.tag);
             Enemy enemySc = collision.GetComponent<Enemy>();
             enemySc.DamagefromEnemy(damage);
         }
@@ -509,10 +508,8 @@ public class Player : MonoBehaviour
     }
     public void DamagefromEnemy(float _damage)
     {
-        Debug.Log($"Damage = {_damage}");
         curHp -= _damage;
         gaugeBar.SetHp(curHp, maxHp);
-        Debug.Log($"CurHp = {curHp}");
         sprDefault = sr.color;
         sr.color = new Color(1, 1, 1, 0.4f);
         Invoke("setSpriteDefault", 0.2f);

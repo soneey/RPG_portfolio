@@ -3318,7 +3318,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   curHp: 0
-  maxHp: 50
+  maxHp: 100
   damage: 5
   moveDelayCheck: 100
   moveSpeed: 0.5
@@ -3776,7 +3776,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   checkDelayCount: 3000000
   createMonster: 1
-  maxRespawnCount: 30
+  maxRespawnCount: 5
   RabbitRespawn: 1
   CrazyRabbitRespawn: 0
   listEnemys:
