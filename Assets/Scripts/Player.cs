@@ -74,8 +74,8 @@ public class Player : MonoBehaviour
             enemySc.DamagefromEnemy(damage);
         }
     }
-    
-    public Vector2 curLookDir()
+
+    public Vector3 getCurLookDir()
     {
         return lookDir;
     }
@@ -363,6 +363,7 @@ public class Player : MonoBehaviour
         {
             attackDelayCheck += Time.deltaTime;
         }
+
         if (attackDelayCheck > 100)
         {
             destroyCheckBox();
@@ -371,7 +372,7 @@ public class Player : MonoBehaviour
             isAttack = false;
         }
     }
-    
+
 
     private void createCheckBoxPos()
     {
@@ -401,6 +402,7 @@ public class Player : MonoBehaviour
             check.x -= 0;
             check.y -= 0.75f;
         }
+        Invoke("setSprite", 0.5f);
         //Debug.Log($"check = {check}");
         trsCheckBoxPos = check;
         //Debug.Log($"trsCheckBoxPos = {trsCheckBoxPos}");
@@ -420,6 +422,12 @@ public class Player : MonoBehaviour
     }
     private void destroyCheckBox()
     {
+        Transform checkBox = player.GetChild(1);
+        Destroy(checkBox.gameObject);
+    }
+
+    private void setSprite()
+    {
         if (lookDir == Vector3.left)
         {
             sr.sprite = idle[0];
@@ -436,10 +444,7 @@ public class Player : MonoBehaviour
         {
             sr.sprite = idle[9];
         }
-        Transform checkBox = player.GetChild(1);
-        Destroy(checkBox.gameObject);
     }
-    
     /// <summary>
     /// 플레이어의 모션이 변경되면 스프라이트를 변경
     /// </summary>
@@ -510,8 +515,12 @@ public class Player : MonoBehaviour
         curHp -= _damage;
         gaugeBar.SetHp(curHp, maxHp);
         sprDefault = sr.color;
-        sr.color = new Color(1, 1, 1, 0.4f);
+        sr.color = new Color(1, 0, 0, 0.5f);
         Invoke("setSpriteDefault", 0.2f);
+    }
+    public float getCurHp()
+    {
+        return curHp;
     }
     public void SetHp(GaugeBar _value)
     {

@@ -58,56 +58,57 @@ public class Enemy : MonoBehaviour
     Rigidbody2D rigid;
     Collider2D coll;
 
-    //private void OnValidate()
-    //{
-    //    if (gaugeBar != null)
-    //        gaugeBar.SetHp(curHp, maxHp);
-    //}
-
-    RaycastHit2D checkPlayer;
-   
     private void OnCollisionStay2D(Collision2D collision)
     {
         if (curMotion != enemyMotion.Attack && collision.gameObject.tag == "Player" && Vector2.Distance(transform.position, collision.gameObject.transform.position) < 0.5f)
         {
-            Debug.Log("<color=red>Destroy</color>");
+            Debug.Log("<color=red>EP Destroy</color>");
+            Destroy(gameObject);
+        }
+        if (collision.gameObject.tag == "Enemy" && Vector2.Distance(transform.position, collision.gameObject.transform.position) < 0.5f)
+        {
+            Debug.Log("<color=yellow>EE before</color>");
+            transform.position = before;
+        }
+        if (collision.gameObject.tag == "Enemy" && Vector2.Distance(transform.position, collision.gameObject.transform.position) == 0.0f)
+        {
+            Debug.Log("<color=red>EE Destroy</color>");
             Destroy(gameObject);
         }
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        boolSetCurPos = true;
         if (collision.gameObject.tag == "HitBox" && curMotion != enemyMotion.Attack)
         {
-            Vector2 targerDir;
+            Vector3 targerDir;
             Transform obj = collision.gameObject.transform.parent;
-            //targetPlayer = obj.gameObject;
             Player objSc = obj.GetComponent<Player>();
-            targerDir = objSc.curLookDir();
+            targerDir = objSc.getCurLookDir();
             Debug.Log(targerDir);
-            nextAction = false;
-            //if (targerDir.x == -1)
-            //{
-            //    lookDir = Vector3.right;
-            //    sr.sprite = idle[3];
-            //}
-            //if (targerDir.x == 1)
-            //{
-            //    lookDir = Vector3.left;
-            //    sr.sprite = idle[0];
-            //}
-            //if (targerDir.y == -1)
-            //{
-            //    lookDir = Vector3.up;
-            //    sr.sprite = idle[6];
-            //}
-            //if (targerDir.y == 1)
-            //{
-            //    lookDir = Vector3.down;
-            //    sr.sprite = idle[9];
-            //}
+            allStop();
+            if (targerDir.x == -1)
+            {
+                lookDir = Vector3.right;
+                sr.sprite = idle[3];
+            }
+            if (targerDir.x == 1)
+            {
+                lookDir = Vector3.left;
+                sr.sprite = idle[0];
+            }
+            if (targerDir.y == -1)
+            {
+                lookDir = Vector3.up;
+                sr.sprite = idle[6];
+            }
+            if (targerDir.y == 1)
+            {
+                lookDir = Vector3.down;
+                sr.sprite = idle[9];
+            }
             objSc.DamagefromEnemy(damage);
             curMotion = enemyMotion.Attack;
+            boolAttackDelayCheck = true;
         }
     }
 
@@ -125,10 +126,10 @@ public class Enemy : MonoBehaviour
     GameObject HpGaugeBar;
     void Start()
     {
-        objPlayer = GameObject.Find("Player");
-        Player PlayerSc = objPlayer.GetComponent<Player>();
-        monsterNumber = GameManager.Instance.GetMonsterNumber();//몬스터번호0번 토끼일때
+        //objPlayer = GameObject.Find("Player");
+        //Player PlayerSc = objPlayer.GetComponent<Player>();
         //moveVec = transform.position;
+        monsterNumber = GameManager.Instance.GetMonsterNumber();//몬스터번호0번 토끼일때
         GameManager manager = GameManager.Instance;
         trsGaugeBarPos = transform.localPosition;
         GameObject HpGaugeBar = manager.GetGaugeBar();
@@ -137,33 +138,18 @@ public class Enemy : MonoBehaviour
         gaugeBar.SetHp(curHp, maxHp);
     }
 
-    bool boolSetCurPos;
-    private void setCurPos()
-    {
-
-    }
     private void Update()
     {
-        if (boolMoveDelayCheck == true && boolSetCurPos == true)
-        {
-            Vector2 pos;
-            pos.x = transform.position.x;
-            pos.y = transform.position.y;
-            if (pos.x % 0.5 != 0 || pos.y % 0.5 != 0)
-            {
-                transform.position = target;
-            }
-            //transform.position = new Vector2(pos.x, pos.y);
-            boolSetCurPos = false;
-        }
+        //setRunTarget();
+        //run();
     }
     void FixedUpdate()
     {
         getRandomNumber();
         //setMovingTarget();
-        checkMoveDelay(moveSpeed);
         softMoving();
-        checkNext();
+        checkMoveDelay(moveSpeed);
+        //checkNext();
         changeSprite();
         checkAttackDelay(attackSpeed);
         dead();
@@ -216,8 +202,18 @@ public class Enemy : MonoBehaviour
             }
             changeDice = false;
         }
-        setTarget = true;
-        setMovingTarget();
+        RaycastHit2D[] hit = Physics2D.RaycastAll(boxCollider2D.bounds.center, lookDir, 0.5f);
+        Debug.DrawRay(boxCollider2D.bounds.center, lookDir * 0.5f, Color.magenta);
+        if (hit.Length == 1)
+        {
+            setTarget = true;
+            setMovingTarget();
+        }
+        else
+        {
+            changeDice = true;
+            return;
+        }
     }
 
     bool setTarget;
@@ -234,9 +230,8 @@ public class Enemy : MonoBehaviour
             case 3: { target = new Vector3(transform.position.x, transform.position.y - 0.5f); break; }
             case 4: break;
         }
-        //coll.gameObject
-        before = new Vector3(transform.position.x, transform.position.y);
         beforeSave = true;
+        before = new Vector3(transform.position.x, transform.position.y);
         setTarget = false;
         RayVec(moveTarget);
         if (moveTarget.transform == null)
@@ -244,15 +239,12 @@ public class Enemy : MonoBehaviour
             isMoving = true;
             checkChangeSpriteDelay = true;
             curMotion = enemyMotion.Step;
-            softMoving();
         }
         if (moveTarget.transform != null)
         {
-            changeDice = true;
-            setTarget = true;
-            return;
-            //setTarget = false;
-            //boolMoveDelayCheck = true;
+            moveDelayCheck -= 5.0f;
+            Debug.Log($"{moveDelayCheck} {boolMoveDelayCheck}");
+            boolMoveDelayCheck = true;
         }
     }
 
@@ -262,7 +254,7 @@ public class Enemy : MonoBehaviour
         if (isMoving == false) { return; }
         if (isMoving == true && beforeSave == true && boolMoveDelayCheck == false)
         {
-            ratio += Time.deltaTime * 1.8f;
+            ratio += Time.deltaTime * 1.3f;
             switch (randomDirNumber)
             {
                 case 0:
@@ -292,16 +284,17 @@ public class Enemy : MonoBehaviour
             }
             transform.position = after;
         }
-        if (transform.position == target && isMoving == true && ratio >= 1.0f)
+        if (target == after && isMoving == true && ratio > 1.0f)
         {
             ratio = 0.0f;
+            boolMoveDelayCheck = true;
             isMoving = false;
             beforeSave = false;
+            nextAction = false;
+            //checkNext();
+            //changeDice = true;
             curMotion = enemyMotion.Idle;
             checkChangeSpriteDelay = true;
-            boolMoveDelayCheck = true;
-            nextAction = true;
-            checkNext();
         }
     }
 
@@ -319,7 +312,9 @@ public class Enemy : MonoBehaviour
         }
         if (Vector3.Distance(transform.position, PlayerSc.transform.position) == 0.5f)
         {
-            return;
+            boolSetRunTarget = true;
+            //allStop();
+            setRunTarget();
         }
 
         //nextcheck = Physics2D.RaycastAll(boxCollider2D.bounds.center, lookDir, 0.5f);
@@ -338,65 +333,86 @@ public class Enemy : MonoBehaviour
         //    run();
         //}
     }
+    bool boolSetRunTarget;
+    private void setRunTarget()
+    {
+        if (boolSetRunTarget == false) { return; }
+        if (boolSetRunTarget == true)
+        {
+            RaycastHit2D[] hit = Physics2D.RaycastAll(boxCollider2D.bounds.center, lookDir, 1.0f);
+            Debug.DrawRay(boxCollider2D.bounds.center, lookDir * 1.0f, Color.magenta);
+            if (hit.Length != 1)
+            {
+                randomDirNumber = UnityEngine.Random.Range(0, 5);
+                return;
+            }
+            if (hit.Length == 1)
+            {
+                boolSetRunTarget = false;
+            }
+        }
+        before = new Vector3(transform.position.x, transform.position.y);
+        beforeSave = true;
+        if (lookDir == Vector3.left)
+        {
+            target = new Vector3(transform.position.x - 1.0f, transform.position.y);
+        }
+        if (lookDir == Vector3.right)
+        {
+            target = new Vector3(transform.position.x + 1.0f, transform.position.y);
+        }
+        if (lookDir == Vector3.up)
+        {
+            target = new Vector3(transform.position.x, transform.position.y + 1.0f);
+        }
+        if (lookDir == Vector3.down)
+        {
+            target = new Vector3(transform.position.x, transform.position.y - 1.0f);
+        }
+        curMotion = enemyMotion.Step;
+        checkChangeSpriteDelay = true;
+        isMoving = true;
+        boolRun = true;
 
+        //objPlayer = GameObject.Find("Player");
+        //Player PlayerSc = objPlayer.GetComponent<Player>();
+        //Vector2 targerDir;
+        //targerDir = PlayerSc.curLookDir();
+        //Debug.Log(targerDir);
+        //if체력일정이하 도망
+    }
+    bool boolRun;
     private void run()
     {
-        Debug.Log("run");
-        objPlayer = GameObject.Find("Player");
-        Player PlayerSc = objPlayer.GetComponent<Player>();
-        Vector2 targerDir;
-        targerDir = PlayerSc.curLookDir();
-        Debug.Log(targerDir);
-
-        before = new Vector3(transform.position.x, transform.position.y);
-        if (targerDir.x == -1)
+        if (boolRun == true)
         {
-            lookDir = Vector3.right;
-            target = new Vector3(transform.position.x + 1.0f, transform.position.y);
-            curMotion = enemyMotion.Step;
-            checkChangeSpriteDelay = true;
+            ratio += Time.deltaTime * 1.8f;
+            after.x = Mathf.SmoothStep(before.x, target.x, ratio);
+            after.y = before.y;
+            transform.position = after;
         }
-        if (targerDir.x == 1)
+        if (target == after && isMoving == true && ratio > 1.0f)
         {
-            lookDir = Vector3.left;
-            target = new Vector3(transform.position.x - 1.0f, transform.position.y);
-            curMotion = enemyMotion.Step;
-            checkChangeSpriteDelay = true;
+            Debug.Log("<color=red>run</color>");
+            boolRun = false;
+            ratio = 0.0f;
+            curMotion = enemyMotion.Idle;
+            boolAllStop = false;
+            isMoving = false;
+            beforeSave = false;
+            boolMoveDelayCheck = true;
+            changeDice = true;
         }
-        if (targerDir.y == 1)
-        {
-            lookDir = Vector3.down;
-            target = new Vector3(transform.position.x, transform.position.y - 1.0f);
-            curMotion = enemyMotion.Step;
-            checkChangeSpriteDelay = true;
-        }
-        if (targerDir.y == -1)
-        {
-            lookDir = Vector3.up;
-            target = new Vector3(transform.position.x, transform.position.y + 1.0f);
-            curMotion = enemyMotion.Step;
-            checkChangeSpriteDelay = true;
-        }
-        Debug.Log($"run target = {target}");
-        isMoving = true;
-        beforeSave = true;
-        boolMoveDelayCheck = false;
-        curMotion = enemyMotion.Idle;
-        boolAllStop = false;
-        softMoving();
-        changeDice = true;
-        //if체력일정이하 도망
     }
     private void allStop()
     {
         boolAllStop = true;
-        transform.position = before;
-        changeDice = false;
+        //transform.position = before;
         isMoving = false;
         setTarget = false;
         nextAction = false;
         beforeSave = false;
-        boolMoveDelayCheck = true;
+        boolMoveDelayCheck = false;
         moveDelayCheck = 100.0f;
         ratio = 0.0f;
         Debug.Log($"<color=yellow>allStop Reset {moveDelayCheck}</color>");
@@ -410,7 +426,6 @@ public class Enemy : MonoBehaviour
             //Debug.Log("checkMoveDelay");
             isMoving = false;
             setTarget = false;
-            boolSetCurPos = true;
             moveDelayCheck -= _value;
         }
         if (moveDelayCheck != 100.0f && boolMoveDelayCheck == true)
@@ -421,6 +436,7 @@ public class Enemy : MonoBehaviour
         {
             boolMoveDelayCheck = false;
             moveDelayCheck = 100.0f;
+            ratio = 0.0f;
             changeDice = true;
         }
     }
@@ -529,30 +545,7 @@ public class Enemy : MonoBehaviour
                     }
                     break;
                 }
-            case enemyMotion.Attack:
-                {
-                    if (boolAttackDelayCheck == false)
-                    {
-                        if (lookDir == Vector3.left)
-                        {
-                            sr.sprite = idle[1];
-                        }
-                        if (lookDir == Vector3.right)
-                        {
-                            sr.sprite = idle[4];
-                        }
-                        if (lookDir == Vector3.up)
-                        {
-                            sr.sprite = idle[7];
-                        }
-                        if (lookDir == Vector3.down)
-                        {
-                            sr.sprite = idle[10];
-                        }
-                    }
-                    curMotion = enemyMotion.Idle;
-                }
-                break;
+
         }
         checkChangeSpriteDelay = false;
     }
@@ -572,7 +565,6 @@ public class Enemy : MonoBehaviour
         if (boolAttackDelayCheck == false) { return; }
         if (attackDelayCheck == 100.0f && boolAttackDelayCheck == true)
         {
-            curMotion = enemyMotion.Attack;
             isAttack = true;
             attackDelayCheck -= _value;
         }
@@ -641,48 +633,60 @@ public class Enemy : MonoBehaviour
 
     private void counterattack()
     {
-        boolAttackDelayCheck = true;
-        //RayVec(attackTarget, 0, 0.5f);
-        //if (attackTarget.Length == 1)
-        //{
-        //    RayVec(attackTarget, 0, 0.5f);
-        //}
-        //if (attackTarget.Length == 2)
-        //{
-        //    Transform obj = attackTarget[1].transform.gameObject.transform;
-        //    Player objSc = obj.GetComponent<Player>();
-        //    objSc.DamagefromEnemy(damage);
-        //}
-        //Player objSc = attackTarget.collider.GetComponent<Player>();
-        //Debug.Log(objSc);
-        //if (curMotion != enemyMotion.Attack)
-        //{
-        //    allStop();
-        //    curMotion = enemyMotion.Attack;
-        //    boolAttackDelayCheck = true;
-        //    objSc.DamagefromEnemy(damage);
-        //}
-        //if (curMotion == enemyMotion.Attack)
-        //{
-        //    boolAttackDelayCheck = true;
-        //    objSc.DamagefromEnemy(damage);
-        //}
+        if (attackDelayCheck == 100.0f && isAttack == true && boolAttackDelayCheck == false)
+        {
+            Debug.Log("counterattack");
+            objPlayer = GameObject.Find("Player");
+            Player PlayerSc = objPlayer.GetComponent<Player>();
+            PlayerSc.DamagefromEnemy(damage);
+            Debug.Log($"<color=green>Player curHp = {PlayerSc.getCurHp()}</color>");
+            if (lookDir == Vector3.left)
+            {
+                sr.sprite = idle[1];
+            }
+            if (lookDir == Vector3.right)
+            {
+                sr.sprite = idle[4];
+            }
+            if (lookDir == Vector3.up)
+            {
+                sr.sprite = idle[7];
+            }
+            if (lookDir == Vector3.down)
+            {
+                sr.sprite = idle[10];
+            }
+            boolAttackDelayCheck = true;
+            Invoke("setSprite", 0.2f);
+        }
+    }
+    private void setSprite()
+    {
+        if (lookDir == Vector3.left)
+        {
+            sr.sprite = idle[0];
+        }
+        if (lookDir == Vector3.right)
+        {
+            sr.sprite = idle[3];
+        }
+        if (lookDir == Vector3.up)
+        {
+            sr.sprite = idle[6];
+        }
+        if (lookDir == Vector3.down)
+        {
+            sr.sprite = idle[9];
+        }
     }
     public void DamagefromEnemy(float _damage)
     {
-        allStop();
         curHp -= _damage;
-        Debug.Log($"Enemy curHp = {curHp}");
+        Debug.Log($"<color=red>Enemy curHp = {curHp}</color>");
         gaugeBar.SetHp(curHp, maxHp);
         sprDefault = sr.color;
         sr.color = new Color(1, 0, 0, 0.5f);
         Invoke("setSpriteDefault", 0.2f);
-        if (curMotion != enemyMotion.Attack)
-            counterattack();
-    }
-    public void DamageToEnemy(float _damage)
-    {
-
     }
     public float GetRespawnTime()
     {
