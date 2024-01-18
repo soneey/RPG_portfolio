@@ -33,7 +33,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 9
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &720441391690348784
 SpriteRenderer:
@@ -108,7 +108,7 @@ MonoBehaviour:
   moveSpeed: 5
   isMoving: 0
   attackDelayCheck: 100
-  attackSpeed: 2
+  attackSpeed: 1.5
   isAttack: 0
   idle:
   - {fileID: 701283455, guid: f1e81b513a64fb24f800439041973e58, type: 3}
@@ -168,7 +168,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.5, y: 0.5}
+  m_Size: {x: 0.49, y: 0.49}
   m_EdgeRadius: 0
 --- !u!50 &2068186134797849456
 Rigidbody2D:

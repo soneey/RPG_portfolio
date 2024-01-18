@@ -61,19 +61,16 @@ public class Player : MonoBehaviour
 
     private GaugeBar gaugeBar;
     GameObject HpGaugeBar;
-    //private void OnValidate()
+ 
+    //private void OnTriggerEnter2D(Collider2D collision)
     //{
-    //    if (gaugeBar != null)
-    //        gaugeBar.SetHp(curHp, maxHp);
+    //    if (isAttack == true && collision.gameObject.tag == "Enemy")
+    //    {
+    //        Enemy enemySc = collision.GetComponent<Enemy>();
+    //        enemySc.DamagefromEnemy(damage);
+
+    //    }
     //}
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (isAttack == true && collision.gameObject.tag == "Enemy")
-        {
-            Enemy enemySc = collision.GetComponent<Enemy>();
-            enemySc.DamagefromEnemy(damage);
-        }
-    }
 
     public Vector3 getCurLookDir()
     {
@@ -109,7 +106,7 @@ public class Player : MonoBehaviour
         moving();
         changeSprite();
         attack();
-
+        checkAttackDelay(attackSpeed);
     }
 
     Vector3 before;
@@ -366,7 +363,7 @@ public class Player : MonoBehaviour
 
         if (attackDelayCheck > 100)
         {
-            destroyCheckBox();
+            //destroyCheckBox();
             attackDelayCheck = 100.0f;
             boolAttackDelayCheck = false;
             isAttack = false;
@@ -409,16 +406,45 @@ public class Player : MonoBehaviour
     }
     private void attack()
     {
+        if (Input.GetKey(KeyCode.Space) && isAttack == true) { return; }
         if (Input.GetKey(KeyCode.Space) && boolAttackDelayCheck == false)
         {
             boolAttackDelayCheck = true;
             isAttack = true;
-            //curMotion = playerMotion.Attack;
-            createCheckBoxPos();
-            GameObject objCheckBox = listCheckBox[0];
-            GameObject obj = Instantiate(objCheckBox, trsCheckBoxPos, Quaternion.identity, player);
+            if (lookDir == Vector3.left)
+            {
+                sr.sprite = idle[1];
+            }
+            if (lookDir == Vector3.right)
+            {
+                sr.sprite = idle[4];
+            }
+            if (lookDir == Vector3.up)
+            {
+                sr.sprite = idle[7];
+            }
+            if (lookDir == Vector3.down)
+            {
+                sr.sprite = idle[10];
+            }
+            Invoke("setSprite", 0.5f);
+            RaycastHit2D[] hit = Physics2D.RaycastAll(boxCollider2D.bounds.center, lookDir, 0.5f);
+            Debug.DrawRay(boxCollider2D.bounds.center, lookDir * 0.5f, Color.blue);
+            if (hit.Length == 1)
+            {
+                return;
+            }
+            if (hit.Length > 1 && hit[1].transform.gameObject.tag == "Enemy")
+            {
+                Transform hitEnemy;
+                hitEnemy = hit[1].transform;
+                Enemy hitEnemySc = hitEnemy.GetComponent<Enemy>();
+                hitEnemySc.DamagefromEnemy(damage, lookDir);
+            }
+            //createCheckBoxPos();
+            //GameObject objCheckBox = listCheckBox[0];
+            //GameObject obj = Instantiate(objCheckBox, trsCheckBoxPos, Quaternion.identity, player);
         }
-        checkAttackDelay(attackSpeed);
     }
     private void destroyCheckBox()
     {

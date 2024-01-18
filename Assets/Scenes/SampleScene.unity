@@ -3213,14 +3213,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6154631874330280064, guid: 3d87a7a5c6e2d8741a6dac3433fb345d, type: 3}
-      propertyPath: m_Size.x
-      value: 0.49
-      objectReference: {fileID: 0}
-    - target: {fileID: 6154631874330280064, guid: 3d87a7a5c6e2d8741a6dac3433fb345d, type: 3}
-      propertyPath: m_Size.y
-      value: 0.49
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3642,14 +3634,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6154631874330280064, guid: 77e7999015ca4624d9c15b78093fa10f, type: 3}
-      propertyPath: m_Size.x
-      value: 0.49
-      objectReference: {fileID: 0}
-    - target: {fileID: 6154631874330280064, guid: 77e7999015ca4624d9c15b78093fa10f, type: 3}
-      propertyPath: m_Size.y
-      value: 0.49
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3793,7 +3777,7 @@ MonoBehaviour:
   checkDelayCount: 3000000
   objPlayer: {fileID: 627781947}
   createMonster: 1
-  maxRespawnCount: 15
+  maxRespawnCount: 10
   RabbitRespawn: 1
   CrazyRabbitRespawn: 0
   listEnemys:

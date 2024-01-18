@@ -23,6 +23,7 @@ public class Enemy : MonoBehaviour
     [SerializeField] private float maxHp;
     [SerializeField] private float damage;
     [SerializeField] private float respawnTime;
+    [SerializeField] float chaseSpeed;
 
     [Header("액션")]
     [SerializeField] private float moveDelayCheck = 100.0f;
@@ -56,7 +57,6 @@ public class Enemy : MonoBehaviour
     SpriteRenderer sr;
     BoxCollider2D boxCollider2D;
     Rigidbody2D rigid;
-    Collider2D coll;
 
     private void OnCollisionStay2D(Collision2D collision)
     {
@@ -76,47 +76,46 @@ public class Enemy : MonoBehaviour
             Destroy(gameObject);
         }
     }
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.gameObject.tag == "HitBox" && curMotion != enemyMotion.Attack)
-        {
-            Vector3 targerDir;
-            Transform obj = collision.gameObject.transform.parent;
-            Player objSc = obj.GetComponent<Player>();
-            targerDir = objSc.getCurLookDir();
-            Debug.Log(targerDir);
-            allStop();
-            if (targerDir.x == -1)
-            {
-                lookDir = Vector3.right;
-                sr.sprite = idle[3];
-            }
-            if (targerDir.x == 1)
-            {
-                lookDir = Vector3.left;
-                sr.sprite = idle[0];
-            }
-            if (targerDir.y == -1)
-            {
-                lookDir = Vector3.up;
-                sr.sprite = idle[6];
-            }
-            if (targerDir.y == 1)
-            {
-                lookDir = Vector3.down;
-                sr.sprite = idle[9];
-            }
-            objSc.DamagefromEnemy(damage);
-            curMotion = enemyMotion.Attack;
-            boolAttackDelayCheck = true;
-        }
-    }
+    //private void OnTriggerEnter2D(Collider2D collision)
+    //{
+    //    if (collision.gameObject.tag == "HitBox" && curMotion != enemyMotion.Attack)
+    //    {
+    //        Vector3 targerDir;
+    //        Transform obj = collision.gameObject.transform.parent;
+    //        Player objSc = obj.GetComponent<Player>();
+    //        targerDir = objSc.getCurLookDir();
+    //        Debug.Log(targerDir);
+    //        allStop();
+    //        if (targerDir.x == -1)
+    //        {
+    //            lookDir = Vector3.right;
+    //            sr.sprite = idle[3];
+    //        }
+    //        if (targerDir.x == 1)
+    //        {
+    //            lookDir = Vector3.left;
+    //            sr.sprite = idle[0];
+    //        }
+    //        if (targerDir.y == -1)
+    //        {
+    //            lookDir = Vector3.up;
+    //            sr.sprite = idle[6];
+    //        }
+    //        if (targerDir.y == 1)
+    //        {
+    //            lookDir = Vector3.down;
+    //            sr.sprite = idle[9];
+    //        }
+    //        objSc.DamagefromEnemy(damage);
+    //        curMotion = enemyMotion.Attack;
+    //        boolAttackDelayCheck = true;
+    //    }
+    //}
 
     private void Awake()
     {
         rigid = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
-        coll = GetComponent<Collider2D>();
         sprDefault = sr.color;
         boxCollider2D = GetComponent<BoxCollider2D>();
         SetStatus();
@@ -142,6 +141,7 @@ public class Enemy : MonoBehaviour
     {
         //setRunTarget();
         //run();
+        chaseAttackTarget();
     }
     void FixedUpdate()
     {
@@ -161,11 +161,13 @@ public class Enemy : MonoBehaviour
         {
             moveSpeed = UnityEngine.Random.Range(7.5f, 9.0f);
             maxHp = UnityEngine.Random.Range(19, 22);
+            chaseSpeed = 2.0f;
         }
         if (monsterNumber == 1)
         {
             moveSpeed = UnityEngine.Random.Range(3.5f, 4.0f);
             maxHp = UnityEngine.Random.Range(90, 111);
+            chaseSpeed = 1.0f;
         }
     }
 
@@ -290,8 +292,8 @@ public class Enemy : MonoBehaviour
             boolMoveDelayCheck = true;
             isMoving = false;
             beforeSave = false;
-            nextAction = false;
-            //checkNext();
+            //nextAction = false;
+            checkNext();
             //changeDice = true;
             curMotion = enemyMotion.Idle;
             checkChangeSpriteDelay = true;
@@ -304,43 +306,35 @@ public class Enemy : MonoBehaviour
     {
         if (boolAllStop == true) { return; }
         if (nextAction == false) { return; }
-        objPlayer = GameObject.Find("Player");
-        Player PlayerSc = objPlayer.GetComponent<Player>();
-        if (Vector3.Distance(transform.position, PlayerSc.transform.position) > 0.5f)
+        if (nextAction == true)
         {
-            return;
+            objPlayer = GameObject.Find("Player");
+            Player PlayerSc = objPlayer.GetComponent<Player>();
+            if (Vector3.Distance(transform.position, PlayerSc.transform.position) > 0.5f)
+            {
+                return;
+            }
+            if (Vector3.Distance(transform.position, PlayerSc.transform.position) == 0.5f)
+            {
+                boolSetRunTarget = true;
+                //allStop();
+                setRunTarget();
+            }
+            targerDir = PlayerSc.getCurLookDir();
         }
-        if (Vector3.Distance(transform.position, PlayerSc.transform.position) == 0.5f)
-        {
-            boolSetRunTarget = true;
-            //allStop();
-            setRunTarget();
-        }
-
-        //nextcheck = Physics2D.RaycastAll(boxCollider2D.bounds.center, lookDir, 0.5f);
-        //Debug.DrawRay(boxCollider2D.bounds.center, lookDir * 0.5f, Color.blue);
-        //if (nextcheck.Length == 1)
-        //{
-        //    return;
-        //}
-        //for (int iNum = 0; iNum < nextcheck.Length; iNum++)
-        //{
-        //    Debug.Log($"{iNum} = {nextcheck[iNum].transform.gameObject.tag}");
-        //}
-        //if (nextcheck.Length < 1 && nextcheck[1].transform.gameObject.tag == "Player")
-        //{
-        //    allStop();
-        //    run();
-        //}
     }
     bool boolSetRunTarget;
+    Vector3 targerDir;
     private void setRunTarget()
     {
-        if (boolSetRunTarget == false) { return; }
+        if (curHp < maxHp / 2)
+        {
+
+        }
         if (boolSetRunTarget == true)
         {
-            RaycastHit2D[] hit = Physics2D.RaycastAll(boxCollider2D.bounds.center, lookDir, 1.0f);
-            Debug.DrawRay(boxCollider2D.bounds.center, lookDir * 1.0f, Color.magenta);
+            RaycastHit2D[] hit = Physics2D.RaycastAll(boxCollider2D.bounds.center, targerDir, 1.0f);
+            Debug.DrawRay(boxCollider2D.bounds.center, targerDir * 1.0f, Color.magenta);
             if (hit.Length != 1)
             {
                 randomDirNumber = UnityEngine.Random.Range(0, 5);
@@ -579,7 +573,6 @@ public class Enemy : MonoBehaviour
             counterattack();
         }
     }
-    RaycastHit2D[] attackTarget;
     private void RayVec(RaycastHit2D[] _value, float _trsValue, float _disValue)
     {
         //_value = Physics2D.RaycastAll(boxCollider2D.bounds.center, lookDir, 0.5f);
@@ -630,16 +623,73 @@ public class Enemy : MonoBehaviour
     }
 
     GameObject targetPlayer;
+    RaycastHit2D[] attackTarget;
+    Vector3 attackTargetDir;//데미지를 입으면 데미지를 준 상대의 LookDir을 받아옴
 
+    private bool boolChaseTarget = true;
+    private void chaseAttackTarget()
+    {
+        if (boolChaseTarget == false) {  return; }
+        objPlayer = GameObject.Find("Player");
+        Player PlayerSc = objPlayer.GetComponent<Player>();
+        Vector3 trsObjPlayer = objPlayer.transform.position;
+        transform.LookAt(trsObjPlayer,lookDir);
+        RaycastHit2D[] hit = Physics2D.RaycastAll(boxCollider2D.bounds.center, lookDir, 5.0f);
+        Debug.DrawRay(boxCollider2D.bounds.center, lookDir * 5.0f, Color.red);
+        moveSpeed = chaseSpeed;
+    }
     private void counterattack()
     {
-        if (attackDelayCheck == 100.0f && isAttack == true && boolAttackDelayCheck == false)
+        objPlayer = GameObject.Find("Player");
+        Player PlayerSc = objPlayer.GetComponent<Player>();
+        if (curHp != maxHp && curMotion != enemyMotion.Attack && Vector3.Distance(transform.position, PlayerSc.transform.position) > 0.5f)
+        {
+            boolChaseTarget = true;
+            Debug.Log("//chaseAttackTarget();");
+        }
+        if (curHp != maxHp && curMotion != enemyMotion.Attack && Vector3.Distance(transform.position, PlayerSc.transform.position) == 0.5f)
+        {
+            if (attackTargetDir.x == -1)
+            {
+                lookDir = Vector3.right;
+                sr.sprite = idle[3];
+            }
+            if (attackTargetDir.x == 1)
+            {
+                lookDir = Vector3.left;
+                sr.sprite = idle[0];
+            }
+            if (attackTargetDir.y == -1)
+            {
+                lookDir = Vector3.up;
+                sr.sprite = idle[6];
+            }
+            if (attackTargetDir.y == 1)
+            {
+                lookDir = Vector3.down;
+                sr.sprite = idle[9];
+            }
+            RaycastHit2D[] attackTarget = Physics2D.RaycastAll(boxCollider2D.bounds.center, lookDir, 0.5f);
+            Debug.DrawRay(boxCollider2D.bounds.center, lookDir * 0.5f, Color.magenta);
+            if (attackTarget.Length == 1)
+            {
+                boolChaseTarget = true;
+                Debug.Log("//chaseAttackTarget();");
+            }
+            if (attackTarget[1].transform.gameObject == objPlayer)
+            {
+                Debug.Log("<color=magenta>counterattack</color>");
+                curMotion = enemyMotion.Attack;
+                PlayerSc.DamagefromEnemy(damage);
+                Debug.Log($"<color=green>Player curHp = {PlayerSc.getCurHp()}</color>");
+                boolAttackDelayCheck = true;
+                Invoke("setSprite", 0.2f);
+            }
+        }
+
+        if (attackDelayCheck == 100.0f && isAttack == true && boolAttackDelayCheck == false && Vector3.Distance(transform.position, PlayerSc.transform.position) == 0.5f)
         {
             Debug.Log("counterattack");
-            objPlayer = GameObject.Find("Player");
-            Player PlayerSc = objPlayer.GetComponent<Player>();
-            PlayerSc.DamagefromEnemy(damage);
-            Debug.Log($"<color=green>Player curHp = {PlayerSc.getCurHp()}</color>");
             if (lookDir == Vector3.left)
             {
                 sr.sprite = idle[1];
@@ -656,6 +706,8 @@ public class Enemy : MonoBehaviour
             {
                 sr.sprite = idle[10];
             }
+            PlayerSc.DamagefromEnemy(damage);
+            Debug.Log($"<color=green>Player curHp = {PlayerSc.getCurHp()}</color>");
             boolAttackDelayCheck = true;
             Invoke("setSprite", 0.2f);
         }
@@ -679,9 +731,11 @@ public class Enemy : MonoBehaviour
             sr.sprite = idle[9];
         }
     }
-    public void DamagefromEnemy(float _damage)
+    public void DamagefromEnemy(float _damage, Vector3 _value)
     {
         curHp -= _damage;
+        attackTargetDir = _value;
+        counterattack();
         Debug.Log($"<color=red>Enemy curHp = {curHp}</color>");
         gaugeBar.SetHp(curHp, maxHp);
         sprDefault = sr.color;

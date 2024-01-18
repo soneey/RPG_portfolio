@@ -93,16 +93,20 @@ public class GameManager : MonoBehaviour
             int count = maxRespawnCount - curRespawnCount;
             for (int iNum = 0; iNum < count; iNum++)
             {
-                randomRespawnPos();
-                if (trsRespawnPos != transform.position)
+                int posX = UnityEngine.Random.Range(-5, 6);
+                int posY = UnityEngine.Random.Range(-5, 6);
+                trsRespawnPos = new Vector3(posX, posY, 0);
+                if (trsRespawnPos == Vector3.zero)
+                {
+                    posX = UnityEngine.Random.Range(-5, 6);
+                    posY = UnityEngine.Random.Range(-5, 6);
+                    trsRespawnPos = new Vector3(posX, posY, 0);
+                }
+                else if (trsRespawnPos != transform.position)
                 {
                     GameObject objEnemy = listEnemys[monsterNumber];
                     GameObject obj = Instantiate(objEnemy, trsRespawnPos, Quaternion.identity, layerEnemy);
                     //Enemy objSc = obj.GetComponent<Enemy>();
-                }
-                if (trsRespawnPos == Vector3.zero)
-                {
-                    return;
                 }
             }
         }
