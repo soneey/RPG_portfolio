@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class TargetBox : MonoBehaviour
 {
@@ -83,13 +84,16 @@ public class TargetBox : MonoBehaviour
     }
     private void saveTargetList()
     {
+        listTarget = new List<GameObject>();
+        listTemp = new List<GameObject>();
+        listTarget.Insert(0, player);
         for (int i = 0; i < listTemp.Count; i++)
         {
             for (int j = 0; j < listTemp.Count; j++)
             {
                 if (Vector2.Distance(player.transform.position, listTemp[i].gameObject.transform.position) <
                     Vector2.Distance(player.transform.position, listTemp[j].gameObject.transform.position))
-                { 
+                {
                     temp = listTemp[i];
                     listTemp[i] = listTemp[j];
                     listTemp[j] = temp;

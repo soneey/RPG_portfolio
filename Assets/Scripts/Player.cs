@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Player : MonoBehaviour
@@ -73,7 +74,7 @@ public class Player : MonoBehaviour
     //    }
     //}
 
-    
+
     private void Awake()
     {
         curHp = maxHp;
@@ -90,27 +91,57 @@ public class Player : MonoBehaviour
         GameObject obj = Instantiate(HpGaugeBar, trsGaugeBarPos, Quaternion.identity, player);
         gaugeBar = obj.GetComponent<GaugeBar>();
         gaugeBar.SetHp(curHp, maxHp);
+        listTarget = new List<GameObject>();
+        listTemp = new List<GameObject>();
+        listTarget.Insert(0, transform.gameObject);
+        layerEnemy = GameObject.Find("LayerEnemy");
     }
 
     private void Update()
     {
-        rigid.velocity = Vector3.zero;
         turning();
         castMagic();
     }
     void FixedUpdate()
     {
-        setMagicTarget();
+        //setMagicTarget();
         softMoving();
         moving();
         changeSprite();
         attack();
         checkAttackDelay(attackSpeed);
     }
-    private void LateUpdate()
-    {
 
+    GameObject temp;
+    GameObject layerEnemy;
+    private void saveTargetList()
+    {
+        int count = layerEnemy.transform.childCount;
+        for (int iNum = 0; iNum < count; iNum++)
+        {
+            //Debug.Log(Vector3.Distance(player.transform.position, layerEnemy.transform.GetChild(iNum).transform.position));
+            listTemp.Insert(iNum, layerEnemy.transform.GetChild(iNum).gameObject);
+            //Debug.Log(listTemp[iNum].transform.position);
+        }
+        for (int i = 0; i < listTemp.Count; i++)
+        {
+            for (int j = 0; j < listTemp.Count; j++)
+            {
+                if (Vector2.Distance(transform.position, listTemp[i].gameObject.transform.position) <
+                    Vector2.Distance(transform.position, listTemp[j].gameObject.transform.position))
+                {
+                    temp = listTemp[i];
+                    listTemp[i] = listTemp[j];
+                    listTemp[j] = temp;
+                }
+            }
+        }
+        for (int i = 0; i < listTemp.Count; i++)
+        {
+            listTarget.Insert(i + 1, listTemp[i].gameObject);
+        }
     }
+
 
     Vector3 before;
     Vector3 after;
@@ -418,36 +449,71 @@ public class Player : MonoBehaviour
         }
     }
     bool boolCastMagic;
+    [SerializeField] List<GameObject> listTarget;
+    List<GameObject> listTemp;
+    GameObject nextPlusTarget;
+    GameObject nextMinusTarget;
+    GameObject curTarget;
+    int curTargetNum = -1;
     private void castMagic()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+        if (Input.GetKeyDown(KeyCode.Alpha1) && boolCastMagic == false)
         {
             boolCastMagic = true;
+            saveTargetList();
             GameObject Box = objTargetBox.gameObject;
             GameObject obj = Instantiate(Box, transform.position, Quaternion.identity, player);
             TargetBox objSc = obj.GetComponent<TargetBox>();
-            objSc.SetCreateList();
+            for (int i = 0; i < listTarget.Count; i++)
+            {
+                Debug.Log(listTarget[i].transform.position);
+            }
+            curTargetNum = 0;
+            setMagicTarget();
         }
     }
-    List<GameObject> listTemp;
+
     private void setMagicTarget()
     {
         if (boolCastMagic == false) { return; }
         if (boolCastMagic == true)
         {
-            GameObject Box = objTargetBox.gameObject;
-            GameObject obj = Instantiate(Box, transform.position, Quaternion.identity, player);
-            TargetBox objSc = obj.GetComponent<TargetBox>();
-            objSc.GetTargetList();
-            if (Input.GetKeyDown(KeyCode.Home))
+            Transform Box = player.GetChild(1);
+            TargetBox objSc = Box.GetComponent<TargetBox>();
+            //if (Input.GetKeyDown(KeyCode.KeypadEnter))
+            //{
+            //    boolCastMagic = false;
+
+            //    return;
+            //}
+            //if (Input.GetKeyDown(KeyCode.Home))
+            //{
+            //    Box.transform.position = new Vector2(listTarget[0].gameObject.transform.position.x, listTarget[0].gameObject.transform.position.y);
+            //    curTargetNum = 0;
+            //}
+            if ((Input.GetKeyDown(KeyCode.RightArrow)) || (Input.GetKeyDown(KeyCode.UpArrow)))
             {
-                objTargetBox.transform.position = transform.position;
+                curTargetNum++;
+                Debug.Log(curTargetNum);
+                Box.transform.position = new Vector2(listTarget[curTargetNum].gameObject.transform.position.x, listTarget[curTargetNum].gameObject.transform.position.y);
+
+                //if (Box.transform.position == listTarget[curTargetNum].gameObject.transform.position)
+                //{
+                //    ++curTargetNum;
+                //    Debug.Log(curTargetNum);
+                //    Box.transform.position = new Vector2(nextPlusTarget.transform.position.x, nextPlusTarget.transform.position.y);
+                //    if (curTargetNum == listTarget.Count)
+                //    {
+                //        nextPlusTarget = listTarget[0];
+                //        nextMinusTarget = listTarget[curTargetNum - 1];
+                //    }
+                //    else
+                //    {
+                //        nextPlusTarget = listTarget[curTargetNum + 1];
+                //        nextMinusTarget = listTarget[curTargetNum - 1];
+                //    }
+                //}
             }
-            if ((Input.GetKeyDown(KeyCode.RightArrow)) || (Input.GetKey(KeyCode.UpArrow)))
-            {
-                
-            }
-            boolCastMagic = false;
         }
     }
 
