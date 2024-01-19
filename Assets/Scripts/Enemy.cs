@@ -629,14 +629,14 @@ public class Enemy : MonoBehaviour
     private bool boolChaseTarget = true;
     private void chaseAttackTarget()
     {
-        if (boolChaseTarget == false) {  return; }
-        objPlayer = GameObject.Find("Player");
-        Player PlayerSc = objPlayer.GetComponent<Player>();
-        Vector3 trsObjPlayer = objPlayer.transform.position;
-        transform.LookAt(trsObjPlayer,lookDir);
-        RaycastHit2D[] hit = Physics2D.RaycastAll(boxCollider2D.bounds.center, lookDir, 5.0f);
-        Debug.DrawRay(boxCollider2D.bounds.center, lookDir * 5.0f, Color.red);
-        moveSpeed = chaseSpeed;
+        //if (boolChaseTarget == false) {  return; }
+        //objPlayer = GameObject.Find("Player");
+        //Player PlayerSc = objPlayer.GetComponent<Player>();
+        //Vector3 trsObjPlayer = objPlayer.transform.position;
+        //transform.LookAt(trsObjPlayer,lookDir);
+        //RaycastHit2D[] hit = Physics2D.RaycastAll(boxCollider2D.bounds.center, lookDir, 5.0f);
+        //Debug.DrawRay(boxCollider2D.bounds.center, lookDir * 5.0f, Color.red);
+        //moveSpeed = chaseSpeed;
     }
     private void counterattack()
     {

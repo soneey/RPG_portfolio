@@ -3343,6 +3343,7 @@ MonoBehaviour:
   listCheckBox:
   - {fileID: 3466526708776603500, guid: 1b8acd7ab95e3124c91a3eb28d6b88b5, type: 3}
   player: {fileID: 627781950}
+  objTargetBox: {fileID: 4495286471138233495, guid: 9ad375c6e97baa84bac0d5b6df8be57e, type: 3}
   spriteChangeDelay: 0
 --- !u!61 &627781953
 BoxCollider2D:
@@ -3777,7 +3778,7 @@ MonoBehaviour:
   checkDelayCount: 3000000
   objPlayer: {fileID: 627781947}
   createMonster: 1
-  maxRespawnCount: 10
+  maxRespawnCount: 5
   RabbitRespawn: 1
   CrazyRabbitRespawn: 0
   listEnemys:

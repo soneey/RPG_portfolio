@@ -96,7 +96,7 @@ public class GameManager : MonoBehaviour
                 int posX = UnityEngine.Random.Range(-5, 6);
                 int posY = UnityEngine.Random.Range(-5, 6);
                 trsRespawnPos = new Vector3(posX, posY, 0);
-                if (trsRespawnPos == Vector3.zero)
+                if (trsRespawnPos == Player.transform.position)
                 {
                     posX = UnityEngine.Random.Range(-5, 6);
                     posY = UnityEngine.Random.Range(-5, 6);
@@ -115,7 +115,10 @@ public class GameManager : MonoBehaviour
             createMonster = false;
         }
     }
-
+    public int GetMaxRespawnCount()
+    {
+        return maxRespawnCount;
+    }
     public int GetMonsterNumber()
     {
         return monsterNumber;

@@ -49,6 +49,7 @@ public class Player : MonoBehaviour
     [SerializeField] private List<GameObject> listCheckBox;//인스펙터에 프리팹 넣기
     private Vector2 trsCheckBoxPos;
     [SerializeField] Transform player;
+    [SerializeField] GameObject objTargetBox;
 
     [Header("스프라이트 딜레이")]
     [SerializeField] private float spriteChangeDelay = 0.0f;
@@ -61,7 +62,7 @@ public class Player : MonoBehaviour
 
     private GaugeBar gaugeBar;
     GameObject HpGaugeBar;
- 
+
     //private void OnTriggerEnter2D(Collider2D collision)
     //{
     //    if (isAttack == true && collision.gameObject.tag == "Enemy")
@@ -72,10 +73,7 @@ public class Player : MonoBehaviour
     //    }
     //}
 
-    public Vector3 getCurLookDir()
-    {
-        return lookDir;
-    }
+    
     private void Awake()
     {
         curHp = maxHp;
@@ -83,7 +81,6 @@ public class Player : MonoBehaviour
         sr = GetComponent<SpriteRenderer>();
         sprDefault = sr.color;
         boxCollider2D = GetComponent<BoxCollider2D>();
-
     }
     void Start()
     {
@@ -99,14 +96,20 @@ public class Player : MonoBehaviour
     {
         rigid.velocity = Vector3.zero;
         turning();
+        castMagic();
     }
     void FixedUpdate()
     {
+        setMagicTarget();
         softMoving();
         moving();
         changeSprite();
         attack();
         checkAttackDelay(attackSpeed);
+    }
+    private void LateUpdate()
+    {
+
     }
 
     Vector3 before;
@@ -115,6 +118,7 @@ public class Player : MonoBehaviour
 
     private void softMoving()
     {
+        if (boolCastMagic == true) { return; }
         if (isMoving == true && beforeSave == true)
         {
             before = transform.position;
@@ -144,7 +148,7 @@ public class Player : MonoBehaviour
     /// </summary>
     private void moving()
     {
-        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) { return; }
+        if (boolCastMagic == true || Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) { return; }
         else
         {
             if (((Input.GetKey(KeyCode.LeftArrow) && boolMoveDelayCheck == false && footCheck == false))
@@ -186,6 +190,7 @@ public class Player : MonoBehaviour
                     return;
                 }
                 else
+
                 {
                     isMoving = true;
                     beforeSave = true;
@@ -249,7 +254,7 @@ public class Player : MonoBehaviour
     /// </summary>
     private void changeSprite()
     {
-        if (checkChangeSpriteDelay == false) { return; }
+        if (boolCastMagic == true || checkChangeSpriteDelay == false) { return; }
         if (checkChangeSpriteDelay == true)
         {
             if (curMotion == playerMotion.Step && footCheck == false)
@@ -298,6 +303,7 @@ public class Player : MonoBehaviour
     /// </summary>
     private void turning()
     {
+        if (boolCastMagic == true) { return; }
         if ((Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.LeftArrow)) || (Input.GetKey(KeyCode.RightShift) && Input.GetKeyDown(KeyCode.LeftArrow)))
         {
             //lookDir = transform.position;
@@ -371,42 +377,9 @@ public class Player : MonoBehaviour
     }
 
 
-    private void createCheckBoxPos()
-    {
-        Vector2 check = transform.localPosition;
-        //Debug.Log($"transform.localPosition = {check}");
-        if (lookDir == Vector3.left)
-        {
-            sr.sprite = idle[1];
-            check.x -= 0.5f;
-            check.y -= 0.25f;
-        }
-        if (lookDir == Vector3.right)
-        {
-            sr.sprite = idle[4];
-            check.x += 0.5f;
-            check.y -= 0.25f;
-        }
-        if (lookDir == Vector3.up)
-        {
-            sr.sprite = idle[7];
-            check.x -= 0;
-            check.y += 0.25f;
-        }
-        if (lookDir == Vector3.down)
-        {
-            sr.sprite = idle[10];
-            check.x -= 0;
-            check.y -= 0.75f;
-        }
-        Invoke("setSprite", 0.5f);
-        //Debug.Log($"check = {check}");
-        trsCheckBoxPos = check;
-        //Debug.Log($"trsCheckBoxPos = {trsCheckBoxPos}");
-    }
     private void attack()
     {
-        if (Input.GetKey(KeyCode.Space) && isAttack == true) { return; }
+        if (boolCastMagic == true || Input.GetKey(KeyCode.Space) && isAttack == true) { return; }
         if (Input.GetKey(KeyCode.Space) && boolAttackDelayCheck == false)
         {
             boolAttackDelayCheck = true;
@@ -441,17 +414,81 @@ public class Player : MonoBehaviour
                 Enemy hitEnemySc = hitEnemy.GetComponent<Enemy>();
                 hitEnemySc.DamagefromEnemy(damage, lookDir);
             }
-            //createCheckBoxPos();
-            //GameObject objCheckBox = listCheckBox[0];
-            //GameObject obj = Instantiate(objCheckBox, trsCheckBoxPos, Quaternion.identity, player);
+
         }
     }
+    bool boolCastMagic;
+    private void castMagic()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            boolCastMagic = true;
+            GameObject Box = objTargetBox.gameObject;
+            GameObject obj = Instantiate(Box, transform.position, Quaternion.identity, player);
+            TargetBox objSc = obj.GetComponent<TargetBox>();
+            objSc.SetCreateList();
+        }
+    }
+    List<GameObject> listTemp;
+    private void setMagicTarget()
+    {
+        if (boolCastMagic == false) { return; }
+        if (boolCastMagic == true)
+        {
+            GameObject Box = objTargetBox.gameObject;
+            GameObject obj = Instantiate(Box, transform.position, Quaternion.identity, player);
+            TargetBox objSc = obj.GetComponent<TargetBox>();
+            objSc.GetTargetList();
+            if (Input.GetKeyDown(KeyCode.Home))
+            {
+                objTargetBox.transform.position = transform.position;
+            }
+            if ((Input.GetKeyDown(KeyCode.RightArrow)) || (Input.GetKey(KeyCode.UpArrow)))
+            {
+                
+            }
+            boolCastMagic = false;
+        }
+    }
+
     private void destroyCheckBox()
     {
         Transform checkBox = player.GetChild(1);
         Destroy(checkBox.gameObject);
     }
-
+    private void createCheckBoxPos()
+    {
+        Vector2 check = transform.localPosition;
+        //Debug.Log($"transform.localPosition = {check}");
+        if (lookDir == Vector3.left)
+        {
+            sr.sprite = idle[1];
+            check.x -= 0.5f;
+            check.y -= 0.25f;
+        }
+        if (lookDir == Vector3.right)
+        {
+            sr.sprite = idle[4];
+            check.x += 0.5f;
+            check.y -= 0.25f;
+        }
+        if (lookDir == Vector3.up)
+        {
+            sr.sprite = idle[7];
+            check.x -= 0;
+            check.y += 0.25f;
+        }
+        if (lookDir == Vector3.down)
+        {
+            sr.sprite = idle[10];
+            check.x -= 0;
+            check.y -= 0.75f;
+        }
+        Invoke("setSprite", 0.5f);
+        //Debug.Log($"check = {check}");
+        trsCheckBoxPos = check;
+        //Debug.Log($"trsCheckBoxPos = {trsCheckBoxPos}");
+    }
     private void setSprite()
     {
         if (lookDir == Vector3.left)
@@ -536,6 +573,10 @@ public class Player : MonoBehaviour
                 }
         }
     }
+    private void setSpriteDefault()
+    {
+        sr.color = sprDefault;
+    }
     public void DamagefromEnemy(float _damage)
     {
         curHp -= _damage;
@@ -553,9 +594,9 @@ public class Player : MonoBehaviour
         gaugeBar = _value;
         gaugeBar.SetHp(curHp, maxHp);
     }
-    private void setSpriteDefault()
+    public Vector3 getCurLookDir()
     {
-        sr.color = sprDefault;
+        return lookDir;
     }
 }
 
