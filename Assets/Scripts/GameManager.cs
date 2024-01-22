@@ -21,13 +21,13 @@ public class GameManager : MonoBehaviour
     [SerializeField] private List<GameObject> listEnemys;//ÀÎ½ºÆåÅÍ¿¡ ÇÁ¸®ÆÕ ³Ö±â
     [SerializeField] Transform layerEnemy;
     Vector3 trsRespawnPos;//¸ó½ºÅÍ ¸®½ºÆù À§Ä¡
-    private int createCount;
     private float timer = 0.0f;
     private int monsterNumber;
-    private List<Transform> listRespawnPos;
     [SerializeField] GameObject GaugeBar;
+    [SerializeField] GameObject MpGaugeBar;
     public static GameManager Instance;//½Ì±ÛÅæ
-
+    int no0MonsterKillCount;
+    int no1MonsterKillCount;
     private void Awake()
     {
         if (Instance == null)
@@ -38,36 +38,66 @@ public class GameManager : MonoBehaviour
         {
             Destroy(this);
         }
+        no0MonsterKillCount = 0;
+        no1MonsterKillCount = 0;
     }
     void Start()
     {
 
     }
-
     void Update()
     {
         checkRespawnTime();
         selectMonster();
+        nextStage();
+    }
+    public void killPlus(int _value, int _value2)
+    {
+        if (_value == 0)
+        {
+            no0MonsterKillCount += _value2;
+            Debug.Log($"killCount = {no0MonsterKillCount}");
+        }
+        if (_value == 1)
+        {
+            no1MonsterKillCount += _value2;
+            Debug.Log($"killCount = {no1MonsterKillCount}");
+        }
+    }
+    private void nextStage()
+    {
+        if (no0MonsterKillCount == 5)
+        {
+            int count = layerEnemy.transform.childCount;
+            for (int i = count; i > 0; i--)
+            {
+                Destroy(layerEnemy.transform.GetChild(i - 1).gameObject);
+            }
+            CrazyRabbitRespawn = true;
+            createMonster = true;
+            no0MonsterKillCount = 0;
+        }
     }
     private void selectMonster()
     {
-        if (RabbitRespawn == true) { monsterNumber = 0; }
-        if (CrazyRabbitRespawn == true) { monsterNumber = 1; }
+        if (RabbitRespawn == true)
+        {
+            monsterNumber = 0;
+            maxRespawnCount = 10;
+        }
+        if (CrazyRabbitRespawn == true)
+        {
+            monsterNumber = 1;
+            maxRespawnCount = 2;
+        }
     }
-    bool boolCreatRespawnPos;
-    private void randomRespawnPos()
-    {
-        int posX = UnityEngine.Random.Range(-5, 6);
-        int posY = UnityEngine.Random.Range(-5, 6);
-        trsRespawnPos = new Vector3(posX, posY, 0);
 
-    }
     private void checkRespawnTime()
     {
         //if (Enemy.Instance.GetcurRespawnCount() < Enemy.Instance.GetmaxRespawnCount())
         timer += Time.deltaTime;
         //if (timer >= Enemy.Instance.GetRespawnTime())
-        if (timer >= 2)
+        if (timer >= 5)
         {
             checkCurRespawnCount();
             enemyRespawn();
@@ -86,8 +116,6 @@ public class GameManager : MonoBehaviour
     }
     private void enemyRespawn()
     {
-        Player = objPlayer.transform;
-        Player playerSc = Player.GetComponent<Player>();
         if (createMonster == true)
         {
             int count = maxRespawnCount - curRespawnCount;
@@ -95,19 +123,10 @@ public class GameManager : MonoBehaviour
             {
                 int posX = UnityEngine.Random.Range(-5, 6);
                 int posY = UnityEngine.Random.Range(-5, 6);
-                trsRespawnPos = new Vector3(posX, posY, 0);
-                if (trsRespawnPos == Player.transform.position)
-                {
-                    posX = UnityEngine.Random.Range(-5, 6);
-                    posY = UnityEngine.Random.Range(-5, 6);
-                    trsRespawnPos = new Vector3(posX, posY, 0);
-                }
-                else if (trsRespawnPos != transform.position)
-                {
-                    GameObject objEnemy = listEnemys[monsterNumber];
-                    GameObject obj = Instantiate(objEnemy, trsRespawnPos, Quaternion.identity, layerEnemy);
-                    //Enemy objSc = obj.GetComponent<Enemy>();
-                }
+                trsRespawnPos.x = posX;
+                trsRespawnPos.y = posY;
+                GameObject obj = Instantiate(listEnemys[monsterNumber], new Vector3(transform.position.x + posX, transform.position.y + posY, 0), Quaternion.identity, layerEnemy);
+                Enemy objSc = obj.GetComponent<Enemy>();
             }
         }
         if (layerEnemy.childCount == maxRespawnCount)
@@ -126,6 +145,10 @@ public class GameManager : MonoBehaviour
     public GameObject GetGaugeBar()
     {
         return GaugeBar;
+    }
+    public GameObject GetMpGaugeBar()
+    {
+        return MpGaugeBar;
     }
 
 }

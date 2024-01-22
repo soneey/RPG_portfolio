@@ -17,9 +17,14 @@ public class GaugeBar : MonoBehaviour
             Player obj = target.GetComponent<Player>();
             obj.SetHp(this);
         }
-        else
+        else if (target.gameObject.tag == "Enemy")
         {
             Enemy obj = target.GetComponent<Enemy>();
+            obj.SetHp(this);
+        }
+        else if (target.gameObject.tag == "Ai")
+        {
+            Ai obj = target.GetComponent<Ai>();
             obj.SetHp(this);
         }
 

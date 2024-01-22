@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class Player : MonoBehaviour
@@ -26,6 +25,7 @@ public class Player : MonoBehaviour
     [SerializeField] private float curHp;
     [SerializeField] private float maxHp;
     [SerializeField] private float damage;
+    [SerializeField] private float magicDamage;
     private Vector2 trsGaugeBarPos;
 
     [Header("플레이어 행동딜레이")]
@@ -51,6 +51,8 @@ public class Player : MonoBehaviour
     private Vector2 trsCheckBoxPos;
     [SerializeField] Transform player;
     [SerializeField] GameObject objTargetBox;
+    [SerializeField] GameObject castEffect;
+    [SerializeField] GameObject Ai;
 
     [Header("스프라이트 딜레이")]
     [SerializeField] private float spriteChangeDelay = 0.0f;
@@ -63,16 +65,6 @@ public class Player : MonoBehaviour
 
     private GaugeBar gaugeBar;
     GameObject HpGaugeBar;
-
-    //private void OnTriggerEnter2D(Collider2D collision)
-    //{
-    //    if (isAttack == true && collision.gameObject.tag == "Enemy")
-    //    {
-    //        Enemy enemySc = collision.GetComponent<Enemy>();
-    //        enemySc.DamagefromEnemy(damage);
-
-    //    }
-    //}
 
 
     private void Awake()
@@ -91,9 +83,6 @@ public class Player : MonoBehaviour
         GameObject obj = Instantiate(HpGaugeBar, trsGaugeBarPos, Quaternion.identity, player);
         gaugeBar = obj.GetComponent<GaugeBar>();
         gaugeBar.SetHp(curHp, maxHp);
-        listTarget = new List<GameObject>();
-        listTemp = new List<GameObject>();
-        listTarget.Insert(0, transform.gameObject);
         layerEnemy = GameObject.Find("LayerEnemy");
     }
 
@@ -101,6 +90,7 @@ public class Player : MonoBehaviour
     {
         turning();
         castMagic();
+        setMagicTarget();
     }
     void FixedUpdate()
     {
@@ -110,25 +100,60 @@ public class Player : MonoBehaviour
         changeSprite();
         attack();
         checkAttackDelay(attackSpeed);
+        aiHeal();
     }
 
     GameObject temp;
     GameObject layerEnemy;
+    private void aiHeal()
+    {
+        if (curHp < maxHp * 0.6f)
+        {
+            Ai AiSc = Ai.GetComponent<Ai>();
+            AiSc.Heal();
+        }
+            gaugeBar.SetHp(curHp, maxHp);
+    }
     private void saveTargetList()
     {
+        listTarget = new List<GameObject>();
+        listTarget.Insert(0, transform.gameObject);
+        listTemp2 = new List<GameObject>();
+        listTemp2.Insert(0, Ai.gameObject);
         int count = layerEnemy.transform.childCount;
-        for (int iNum = 0; iNum < count; iNum++)
+        for (int i = 0; i < count; i++)//임시리스트2에 모두 저장
         {
-            //Debug.Log(Vector3.Distance(player.transform.position, layerEnemy.transform.GetChild(iNum).transform.position));
-            listTemp.Insert(iNum, layerEnemy.transform.GetChild(iNum).gameObject);
+            listTemp2.Add(layerEnemy.transform.GetChild(i).gameObject);
             //Debug.Log(listTemp[iNum].transform.position);
         }
-        for (int i = 0; i < listTemp.Count; i++)
+        listTemp = new List<GameObject>();
+        for (int i = 0; i < count; i++)//1번2번 범위의 오브젝트를 임시리스트1에 저장
+        {
+            if ((listTemp2[i].gameObject.transform.position.y >= listTarget[0].gameObject.transform.position.y &&
+                    listTemp2[i].gameObject.transform.position.x > listTarget[0].gameObject.transform.position.x) ||
+                    (listTemp2[i].gameObject.transform.position.y >= listTarget[0].gameObject.transform.position.y + 0.5f &&
+                    listTemp2[i].gameObject.transform.position.x <= listTarget[0].gameObject.transform.position.x))
+            {
+                listTemp.Add(listTemp2[i].gameObject);
+            }
+        }
+        listTemp3 = new List<GameObject>();
+        for (int i = 0; i < count; i++)//3번4번 범위의 오브젝트를 임시리스트3에 저장
+        {
+            if ((listTemp2[i].gameObject.transform.position.y <= listTarget[0].gameObject.transform.position.y &&
+                    listTemp2[i].gameObject.transform.position.x < listTarget[0].gameObject.transform.position.x) ||
+                    (listTemp2[i].gameObject.transform.position.y <= listTarget[0].gameObject.transform.position.y - 0.5f &&
+                    listTemp2[i].gameObject.transform.position.x >= listTarget[0].gameObject.transform.position.x))
+            {
+                listTemp3.Add(listTemp2[i].gameObject);
+            }
+        }
+        for (int i = 0; i < listTemp.Count; i++)//임시리스트1의 몬스터를 가까운 거리순으로 재배치
         {
             for (int j = 0; j < listTemp.Count; j++)
             {
-                if (Vector2.Distance(transform.position, listTemp[i].gameObject.transform.position) <
-                    Vector2.Distance(transform.position, listTemp[j].gameObject.transform.position))
+                if (Vector2.Distance(listTarget[0].gameObject.transform.position, listTemp[i].gameObject.transform.position) <
+                    Vector2.Distance(listTarget[0].gameObject.transform.position, listTemp[j].gameObject.transform.position))
                 {
                     temp = listTemp[i];
                     listTemp[i] = listTemp[j];
@@ -136,10 +161,32 @@ public class Player : MonoBehaviour
                 }
             }
         }
-        for (int i = 0; i < listTemp.Count; i++)
+        for (int i = 0; i < listTemp3.Count; i++)//임시리스트3의 몬스터를 먼 거리순으로 재배치
         {
-            listTarget.Insert(i + 1, listTemp[i].gameObject);
+            for (int j = 0; j < listTemp3.Count; j++)
+            {
+                if (Vector2.Distance(listTarget[0].gameObject.transform.position, listTemp3[i].gameObject.transform.position) >
+                    Vector2.Distance(listTarget[0].gameObject.transform.position, listTemp3[j].gameObject.transform.position))
+                {
+                    temp = listTemp3[i];
+                    listTemp3[i] = listTemp3[j];
+                    listTemp3[j] = temp;
+                }
+            }
         }
+
+        for (int i = 0; i < listTemp.Count; i++)//최종리스트에 임시리스트1의 몬스터 순서대로 넣기
+        {
+            listTarget.Add(listTemp[i].gameObject);
+        }
+        for (int i = 0; i < listTemp3.Count; i++)//최종리스트에 들어있는 몬스터의 뒤로 임시리스트3의 몬스터 순서대로 넣기
+        {
+            listTarget.Add(listTemp3[i].gameObject);
+        }
+        //for (int i = 0; i < listTarget.Count; i++)
+        //{
+        //    Debug.Log($"{i} = {listTarget[i].gameObject.transform.position}");
+        //}
     }
 
 
@@ -276,6 +323,8 @@ public class Player : MonoBehaviour
                 }
             }
             //curMotion = curMotion == playerMotion.FrontDirLeftFoot ? playerMotion.FrontDirRightFoot : playerMotion.FrontDirLeftFoot;
+            //Ai AiSc = Ai.GetComponent<Ai>();
+            //AiSc.TrsInfomation(this.transform.position);
             checkMoveDelay(moveSpeed);//플레이어의 이동 딜레이
         }
     }
@@ -400,7 +449,6 @@ public class Player : MonoBehaviour
 
         if (attackDelayCheck > 100)
         {
-            //destroyCheckBox();
             attackDelayCheck = 100.0f;
             boolAttackDelayCheck = false;
             isAttack = false;
@@ -443,33 +491,42 @@ public class Player : MonoBehaviour
                 Transform hitEnemy;
                 hitEnemy = hit[1].transform;
                 Enemy hitEnemySc = hitEnemy.GetComponent<Enemy>();
-                hitEnemySc.DamagefromEnemy(damage, lookDir);
+                hitEnemySc.DamagefromEnemy(damage, lookDir, this.gameObject);
+                GameObject cast = Instantiate(castEffect, hitEnemy.position, Quaternion.identity);
+                SpellEffect castSc = cast.GetComponent<SpellEffect>();
+                castSc.showAttackEffect();
             }
-
         }
     }
+
     bool boolCastMagic;
     [SerializeField] List<GameObject> listTarget;
     List<GameObject> listTemp;
-    GameObject nextPlusTarget;
-    GameObject nextMinusTarget;
+    List<GameObject> listTemp2;
+    List<GameObject> listTemp3;
     GameObject curTarget;
     int curTargetNum = -1;
     private void castMagic()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1) && boolCastMagic == false)
+        if (Input.GetKeyDown(KeyCode.Alpha1) && boolCastMagic == false && isAttack == true)
+        {
+            saveTargetList();
+            return;
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha1) && boolCastMagic == false && isAttack == false)
         {
             boolCastMagic = true;
             saveTargetList();
             GameObject Box = objTargetBox.gameObject;
-            GameObject obj = Instantiate(Box, transform.position, Quaternion.identity, player);
-            TargetBox objSc = obj.GetComponent<TargetBox>();
-            for (int i = 0; i < listTarget.Count; i++)
+            if (curTarget != null)
             {
-                Debug.Log(listTarget[i].transform.position);
+                Instantiate(Box, curTarget.transform.position, Quaternion.identity, player);
+                curTargetNum = 0;
+                return;
             }
+            Instantiate(Box, transform.position, Quaternion.identity, player);
+            curTarget = listTarget[0].gameObject;
             curTargetNum = 0;
-            setMagicTarget();
         }
     }
 
@@ -479,82 +536,69 @@ public class Player : MonoBehaviour
         if (boolCastMagic == true)
         {
             Transform Box = player.GetChild(1);
-            TargetBox objSc = Box.GetComponent<TargetBox>();
-            //if (Input.GetKeyDown(KeyCode.KeypadEnter))
-            //{
-            //    boolCastMagic = false;
-
-            //    return;
-            //}
-            //if (Input.GetKeyDown(KeyCode.Home))
-            //{
-            //    Box.transform.position = new Vector2(listTarget[0].gameObject.transform.position.x, listTarget[0].gameObject.transform.position.y);
-            //    curTargetNum = 0;
-            //}
+            //TargetBox objSc = Box.GetComponent<TargetBox>();
+            if (Input.GetKeyDown(KeyCode.Return))
+            {
+                if (curTarget.gameObject.tag == "Enemy")
+                {
+                    Enemy targetSc = curTarget.GetComponent<Enemy>();
+                    targetSc.DamagefromEnemy(magicDamage, lookDir, this.gameObject);
+                    GameObject obj = Instantiate(castEffect, targetSc.transform.position, Quaternion.identity);
+                    SpellEffect objSc = obj.GetComponent<SpellEffect>();
+                    objSc.showHellfireEffect();
+                }
+                Destroy(Box.gameObject);
+                boolAttackDelayCheck = true;
+                isAttack = true;
+                boolCastMagic = false;
+                GameObject cast = Instantiate(castEffect, transform.position, Quaternion.identity);
+                SpellEffect castSc = cast.GetComponent<SpellEffect>();
+                castSc.showCastEffect();
+            }
+            if (Input.GetKeyDown(KeyCode.Home))
+            {
+                Box.transform.position = new Vector2(listTarget[0].gameObject.transform.position.x, listTarget[0].gameObject.transform.position.y);
+                curTarget = listTarget[0].gameObject;
+                curTargetNum = 0;
+            }
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                Destroy(Box.gameObject);
+                boolCastMagic = false;
+                curTarget = listTarget[0].gameObject;
+                curTargetNum = 0;
+            }
             if ((Input.GetKeyDown(KeyCode.RightArrow)) || (Input.GetKeyDown(KeyCode.UpArrow)))
             {
-                curTargetNum++;
-                Debug.Log(curTargetNum);
+                if (curTargetNum == listTarget.Count - 1)
+                {
+                    curTargetNum = 0;
+                }
+                else
+                {
+                    curTargetNum++;
+                }
                 Box.transform.position = new Vector2(listTarget[curTargetNum].gameObject.transform.position.x, listTarget[curTargetNum].gameObject.transform.position.y);
-
-                //if (Box.transform.position == listTarget[curTargetNum].gameObject.transform.position)
-                //{
-                //    ++curTargetNum;
-                //    Debug.Log(curTargetNum);
-                //    Box.transform.position = new Vector2(nextPlusTarget.transform.position.x, nextPlusTarget.transform.position.y);
-                //    if (curTargetNum == listTarget.Count)
-                //    {
-                //        nextPlusTarget = listTarget[0];
-                //        nextMinusTarget = listTarget[curTargetNum - 1];
-                //    }
-                //    else
-                //    {
-                //        nextPlusTarget = listTarget[curTargetNum + 1];
-                //        nextMinusTarget = listTarget[curTargetNum - 1];
-                //    }
-                //}
+                curTarget = listTarget[curTargetNum].gameObject;
+                Debug.Log($"<color=yellow>curTargetNum = {curTargetNum}</color>");
+            }
+            if ((Input.GetKeyDown(KeyCode.LeftArrow)) || (Input.GetKeyDown(KeyCode.DownArrow)))
+            {
+                if (curTargetNum == 0)
+                {
+                    curTargetNum = listTarget.Count - 1;
+                }
+                else
+                {
+                    curTargetNum--;
+                }
+                Box.transform.position = new Vector2(listTarget[curTargetNum].gameObject.transform.position.x, listTarget[curTargetNum].gameObject.transform.position.y);
+                curTarget = listTarget[curTargetNum].gameObject;
+                Debug.Log($"<color=yellow>curTargetNum = {curTargetNum}</color>");
             }
         }
     }
 
-    private void destroyCheckBox()
-    {
-        Transform checkBox = player.GetChild(1);
-        Destroy(checkBox.gameObject);
-    }
-    private void createCheckBoxPos()
-    {
-        Vector2 check = transform.localPosition;
-        //Debug.Log($"transform.localPosition = {check}");
-        if (lookDir == Vector3.left)
-        {
-            sr.sprite = idle[1];
-            check.x -= 0.5f;
-            check.y -= 0.25f;
-        }
-        if (lookDir == Vector3.right)
-        {
-            sr.sprite = idle[4];
-            check.x += 0.5f;
-            check.y -= 0.25f;
-        }
-        if (lookDir == Vector3.up)
-        {
-            sr.sprite = idle[7];
-            check.x -= 0;
-            check.y += 0.25f;
-        }
-        if (lookDir == Vector3.down)
-        {
-            sr.sprite = idle[10];
-            check.x -= 0;
-            check.y -= 0.75f;
-        }
-        Invoke("setSprite", 0.5f);
-        //Debug.Log($"check = {check}");
-        trsCheckBoxPos = check;
-        //Debug.Log($"trsCheckBoxPos = {trsCheckBoxPos}");
-    }
     private void setSprite()
     {
         if (lookDir == Vector3.left)
@@ -647,13 +691,29 @@ public class Player : MonoBehaviour
     {
         curHp -= _damage;
         gaugeBar.SetHp(curHp, maxHp);
-        sprDefault = sr.color;
+        //sprDefault = sr.color;
         sr.color = new Color(1, 0, 0, 0.5f);
         Invoke("setSpriteDefault", 0.2f);
     }
-    public float getCurHp()
+    public GameObject CurTarget()
+    {
+        return curTarget;
+    }
+    public float GetCurHp()
     {
         return curHp;
+    }
+    public float GetMaxHp()
+    {
+        return maxHp;
+    }
+    public void heal()
+    {
+        curHp += 30;
+        if (curHp >= maxHp)
+        {
+            curHp = maxHp;
+        }
     }
     public void SetHp(GaugeBar _value)
     {
@@ -663,6 +723,32 @@ public class Player : MonoBehaviour
     public Vector3 getCurLookDir()
     {
         return lookDir;
+    }
+    public void SetTraInfomation(GameObject _value, Transform _value2, Vector2 _value3)
+    {
+        //int count = layerEnemy.transform.childCount;
+        //for (int i = 0; i < count; i++)
+        //{
+        //    if (layerEnemy.transform.GetChild(i).gameObject == _value2.gameObject)
+        //    {
+        //        Debug.Log($"{i + 1} = {layerEnemy.transform.GetChild(i).gameObject}");
+        //        Debug.Log($"{i + 1} = {_value3}");
+        //    }
+        //}
+        saveTargetList();
+    }
+    public void SetTraInfomation(GameObject _value, Vector2 _value2)
+    {
+        //int count = layerEnemy.transform.childCount;
+        //for (int i = 0; i < count; i++)
+        //{
+        //    if (layerEnemy.transform.GetChild(i).gameObject == _value2.gameObject)
+        //    {
+        //        Debug.Log($"{i + 1} = {layerEnemy.transform.GetChild(i).gameObject}");
+        //        Debug.Log($"{i + 1} = {_value3}");
+        //    }
+        //}
+        saveTargetList();
     }
 }
 
