@@ -83,12 +83,12 @@ public class GameManager : MonoBehaviour
         if (RabbitRespawn == true)
         {
             monsterNumber = 0;
-            maxRespawnCount = 10;
+            maxRespawnCount = 20;
         }
         if (CrazyRabbitRespawn == true)
         {
             monsterNumber = 1;
-            maxRespawnCount = 2;
+            maxRespawnCount = 5;
         }
     }
 
@@ -114,6 +114,7 @@ public class GameManager : MonoBehaviour
             curRespawnCount = layerEnemy.childCount;
         }
     }
+
     private void enemyRespawn()
     {
         if (createMonster == true)
@@ -134,6 +135,7 @@ public class GameManager : MonoBehaviour
             createMonster = false;
         }
     }
+    
     public int GetMaxRespawnCount()
     {
         return maxRespawnCount;

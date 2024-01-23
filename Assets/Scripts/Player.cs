@@ -91,6 +91,7 @@ public class Player : MonoBehaviour
         turning();
         castMagic();
         setMagicTarget();
+        saveTargetList();
     }
     void FixedUpdate()
     {
@@ -100,19 +101,23 @@ public class Player : MonoBehaviour
         changeSprite();
         attack();
         checkAttackDelay(attackSpeed);
-        aiHeal();
+        aiCheck();
     }
 
     GameObject temp;
     GameObject layerEnemy;
-    private void aiHeal()
+    private void aiCheck()
     {
+        Ai AiSc = Ai.GetComponent<Ai>();
         if (curHp < maxHp * 0.6f)
         {
-            Ai AiSc = Ai.GetComponent<Ai>();
             AiSc.Heal();
         }
-            gaugeBar.SetHp(curHp, maxHp);
+        else
+        {
+            AiSc.Check();
+        }
+        gaugeBar.SetHp(curHp, maxHp);
     }
     private void saveTargetList()
     {
@@ -422,6 +427,7 @@ public class Player : MonoBehaviour
         if (boolMoveDelayCheck == false) { return; }
         if (moveDelayCheck == 100.0f && boolMoveDelayCheck == true)
         {
+            saveTargetList();
             moveDelayCheck -= _value;
         }
         if (moveDelayCheck != 100.0f && boolMoveDelayCheck == true)
@@ -510,13 +516,13 @@ public class Player : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Alpha1) && boolCastMagic == false && isAttack == true)
         {
-            saveTargetList();
+            //saveTargetList();
             return;
         }
         if (Input.GetKeyDown(KeyCode.Alpha1) && boolCastMagic == false && isAttack == false)
         {
             boolCastMagic = true;
-            saveTargetList();
+            //saveTargetList();
             GameObject Box = objTargetBox.gameObject;
             if (curTarget != null)
             {
@@ -542,7 +548,7 @@ public class Player : MonoBehaviour
                 if (curTarget.gameObject.tag == "Enemy")
                 {
                     Enemy targetSc = curTarget.GetComponent<Enemy>();
-                    targetSc.DamagefromEnemy(magicDamage, lookDir, this.gameObject);
+                    targetSc.DamagefromEnemy(magicDamage, lookDir, gameObject);
                     GameObject obj = Instantiate(castEffect, targetSc.transform.position, Quaternion.identity);
                     SpellEffect objSc = obj.GetComponent<SpellEffect>();
                     objSc.showHellfireEffect();
@@ -724,30 +730,8 @@ public class Player : MonoBehaviour
     {
         return lookDir;
     }
-    public void SetTraInfomation(GameObject _value, Transform _value2, Vector2 _value3)
+    public void SetTrsInfo()
     {
-        //int count = layerEnemy.transform.childCount;
-        //for (int i = 0; i < count; i++)
-        //{
-        //    if (layerEnemy.transform.GetChild(i).gameObject == _value2.gameObject)
-        //    {
-        //        Debug.Log($"{i + 1} = {layerEnemy.transform.GetChild(i).gameObject}");
-        //        Debug.Log($"{i + 1} = {_value3}");
-        //    }
-        //}
-        saveTargetList();
-    }
-    public void SetTraInfomation(GameObject _value, Vector2 _value2)
-    {
-        //int count = layerEnemy.transform.childCount;
-        //for (int i = 0; i < count; i++)
-        //{
-        //    if (layerEnemy.transform.GetChild(i).gameObject == _value2.gameObject)
-        //    {
-        //        Debug.Log($"{i + 1} = {layerEnemy.transform.GetChild(i).gameObject}");
-        //        Debug.Log($"{i + 1} = {_value3}");
-        //    }
-        //}
         saveTargetList();
     }
 }

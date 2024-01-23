@@ -116,14 +116,17 @@ public class Ai : MonoBehaviour
         setTarget = true;
         setMovingTarget();
     }
-
+    public void Check()
+    {
+        setMovingTarget();
+    }
 
 
     bool setTarget;
     private void setMovingTarget()
     {
         if (setTarget == false) { return; }
-        if (setTarget == true && Vector2.Distance(gameObject.transform.position, objPlayer.transform.position) != 0.5f)
+        if (setTarget == true && Vector2.Distance(gameObject.transform.position, objPlayer.transform.position) > 1.5f)
         {
             trsTarget = objPlayer.transform.position;
             before = transform.position;
@@ -203,6 +206,8 @@ public class Ai : MonoBehaviour
         {
             if (moveDelayCheck == 100.0f)
             {
+                Player objSc = objPlayer.GetComponent<Player>();
+                objSc.SetTrsInfo();
                 moveDelayCheck -= _value;
             }
             if (moveDelayCheck != 100.0f)

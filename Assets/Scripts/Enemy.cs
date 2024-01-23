@@ -274,7 +274,7 @@ public class Enemy : MonoBehaviour
             isMoving = false;
             setTarget = false;
             Player objSc = objPlayer.GetComponent<Player>();
-            objSc.SetTraInfomation(gameObject, gameObject.transform, transform.position);
+            objSc.SetTrsInfo();
             moveDelayCheck -= _value;
         }
         if (moveDelayCheck != 100.0f && boolMoveDelayCheck == true)
@@ -515,7 +515,7 @@ public class Enemy : MonoBehaviour
             {
                 isChaseTarget = false;
                 Player TargetSc = attackTarget.GetComponent<Player>();
-                TargetSc.SetTraInfomation(gameObject, gameObject.transform, transform.position);
+                TargetSc.SetTrsInfo();
                 moveDelayCheck -= _value;
             }
             if (moveDelayCheck != 100.0f)
@@ -643,10 +643,11 @@ public class Enemy : MonoBehaviour
             Invoke("setSprite", 0.2f);
         }
 
-        if (attackDelayCheck == 100.0f && isAttack == true && boolAttackDelayCheck == false && Vector3.Distance(transform.position, attackTarget.transform.position) != 0.5f)
-        {
-            counterattack();
-        }
+        //if (attackDelayCheck == 100.0f && isAttack == true && boolAttackDelayCheck == false && Vector3.Distance(transform.position, attackTarget.transform.position) != 0.5f)
+        //{
+        //    changeDice = true;
+        //    getRandomNumber();
+        //}
     }
     private void setSprite()
     {
