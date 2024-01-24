@@ -11,7 +11,7 @@ public class GaugeBar : MonoBehaviour
     }
     void Start()
     {
-        Transform target = transform.parent;
+        GameObject target = transform.parent.gameObject;
         if (target.gameObject.tag == "Player")
         {
             Player obj = target.GetComponent<Player>();

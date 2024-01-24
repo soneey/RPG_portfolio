@@ -135,13 +135,13 @@ public class Enemy : MonoBehaviour
         {
             moveSpeed = UnityEngine.Random.Range(9.0f, 10.0f);
             maxHp = UnityEngine.Random.Range(20, 26);
-            chaseSpeed = 2.0f;
+            chaseSpeed = UnityEngine.Random.Range(2.0f, 2.7f);
         }
         if (monsterNumber == 1)
         {
             moveSpeed = UnityEngine.Random.Range(4.5f, 5.0f);
             maxHp = UnityEngine.Random.Range(90, 111);
-            chaseSpeed = 1.0f;
+            chaseSpeed = UnityEngine.Random.Range(1.0f, 1.5f);
         }
     }
 
@@ -420,7 +420,6 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    Vector3 targetLookDir;//데미지를 입으면 데미지를 준 상대의 LookDir을 받아옴
     Vector3 trsTarget;//데미지를 입으면 데미지를 준 상대의 LookDir을 받아옴
 
     bool boolSetChaseTarget = true;
@@ -486,7 +485,7 @@ public class Enemy : MonoBehaviour
             after.x = Mathf.SmoothStep(transform.position.x, target.x, ratio);
             after.y = Mathf.SmoothStep(transform.position.y, target.y, ratio);
             transform.position = after;
-            Debug.Log($"{target} check");
+            //Debug.Log($"{target} check");
         }
         if (target == after && isChaseTarget == true && ratio > 1.0f)
         {
@@ -541,37 +540,31 @@ public class Enemy : MonoBehaviour
     }
     private void counterattack()
     {
-        //if (attackTarget.tag == "Ai")
-        //{
-        //    Ai AiSc = attackTarget.GetComponent<Ai>();
-        //}
-        //if (attackTarget.tag == "Player")
-        //{
-        //    Player PlayerSc = attackTarget.GetComponent<Player>();
-        //}
         if (curHp != maxHp && curMotion != enemyMotion.Attack && Vector3.Distance(transform.position, attackTarget.transform.position) > 0.5f)
         {//전투시작 시 플레이어가 근접해있지 않으면 추적
+            allStop();
             boolSetChaseTarget = true;
             setChaseTarget();
         }
         if (curHp != maxHp && curMotion != enemyMotion.Attack && Vector3.Distance(transform.position, attackTarget.transform.position) == 0.5f)
         {//전투시작 시 플레이어가 옆에 있으면 방향전환
-            if (targetLookDir.x == -1)
+            allStop();
+            if (transform.position.x < attackTarget.transform.position.x)
             {
                 lookDir = Vector3.right;
                 sr.sprite = idle[3];
             }
-            if (targetLookDir.x == 1)
+            if (transform.position.x > attackTarget.transform.position.x)
             {
                 lookDir = Vector3.left;
                 sr.sprite = idle[0];
             }
-            if (targetLookDir.y == -1)
+            if (transform.position.y < attackTarget.transform.position.y)
             {
                 lookDir = Vector3.up;
                 sr.sprite = idle[6];
             }
-            if (targetLookDir.y == 1)
+            if (transform.position.y > attackTarget.transform.position.y)
             {
                 lookDir = Vector3.down;
                 sr.sprite = idle[9];
@@ -607,22 +600,22 @@ public class Enemy : MonoBehaviour
         if (attackDelayCheck == 100.0f && isAttack == true && boolAttackDelayCheck == false && Vector3.Distance(transform.position, attackTarget.transform.position) == 0.5f)
         {
             Debug.Log("counterattack");
-            if (transform.position.x + 0.5f == trsTarget.x)
+            if (transform.position.x + 0.5f == attackTarget.transform.position.x)
             {
                 lookDir = Vector3.right;
                 sr.sprite = idle[4];
             }
-            if (transform.position.x - 0.5f == trsTarget.x)
+            if (transform.position.x - 0.5f == attackTarget.transform.position.x)
             {
                 lookDir = Vector3.left;
                 sr.sprite = idle[1];
             }
-            if (transform.position.y + 0.5f == trsTarget.y)
+            if (transform.position.y + 0.5f == attackTarget.transform.position.y)
             {
                 lookDir = Vector3.up;
                 sr.sprite = idle[7];
             }
-            if (transform.position.y - 0.5f == trsTarget.y)
+            if (transform.position.y - 0.5f == attackTarget.transform.position.y)
             {
                 lookDir = Vector3.down;
                 sr.sprite = idle[10];
@@ -643,11 +636,12 @@ public class Enemy : MonoBehaviour
             Invoke("setSprite", 0.2f);
         }
 
-        //if (attackDelayCheck == 100.0f && isAttack == true && boolAttackDelayCheck == false && Vector3.Distance(transform.position, attackTarget.transform.position) != 0.5f)
-        //{
-        //    changeDice = true;
-        //    getRandomNumber();
-        //}
+        if (attackDelayCheck == 100.0f && isAttack == true && boolAttackDelayCheck == false && Vector3.Distance(transform.position, attackTarget.transform.position) != 0.5f)
+        {
+            Debug.Log("d");
+            boolSetChaseTarget = true;
+            setChaseTarget();
+        }
     }
     private void setSprite()
     {
@@ -669,7 +663,7 @@ public class Enemy : MonoBehaviour
         }
     }
     GameObject attackTarget;
-    public void DamagefromEnemy(float _damage, Vector3 _value, GameObject _value2)
+    public void DamagefromEnemy(float _damage, GameObject _value)
     {
         curHp -= _damage;
         if (curHp <= 0)
@@ -677,8 +671,7 @@ public class Enemy : MonoBehaviour
             dead();
             return;
         }
-        attackTarget = _value2;
-        targetLookDir = _value;
+        attackTarget = _value;
         counterattack();
         Debug.Log($"<color=red>Enemy curHp = {curHp}</color>");
         gaugeBar.SetHp(curHp, maxHp);

@@ -103,6 +103,11 @@ public class Ai : MonoBehaviour
     }
     public void Heal()
     {
+        if (curMp < 10)
+        {
+            Debug.Log("마력이 부족합니다");
+            return;
+        }
         Player playerSc = objPlayer.GetComponent<Player>();
         playerSc.heal();
         GameObject obj = Instantiate(castEffect, playerSc.transform.position, Quaternion.identity);
@@ -253,7 +258,7 @@ public class Ai : MonoBehaviour
             {
                 GameObject obj = attackTarget.gameObject;
                 Enemy objSc = obj.gameObject.GetComponent<Enemy>();
-                objSc.DamagefromEnemy(damage, lookDir, this.gameObject);
+                objSc.DamagefromEnemy(damage, this.gameObject);
                 GameObject cast = Instantiate(castEffect, obj.transform.position, Quaternion.identity);
                 SpellEffect castSc = cast.GetComponent<SpellEffect>();
                 castSc.showAiAttackEffect();

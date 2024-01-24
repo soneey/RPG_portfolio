@@ -69,7 +69,7 @@ public class GameManager : MonoBehaviour
         if (no0MonsterKillCount == 5)
         {
             int count = layerEnemy.transform.childCount;
-            for (int i = count; i > 0; i--)
+            for (int i = count; i > 1; i--)
             {
                 Destroy(layerEnemy.transform.GetChild(i - 1).gameObject);
             }

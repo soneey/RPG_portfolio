@@ -91,7 +91,7 @@ public class Player : MonoBehaviour
         turning();
         castMagic();
         setMagicTarget();
-        saveTargetList();
+        //saveTargetList();
     }
     void FixedUpdate()
     {
@@ -497,7 +497,7 @@ public class Player : MonoBehaviour
                 Transform hitEnemy;
                 hitEnemy = hit[1].transform;
                 Enemy hitEnemySc = hitEnemy.GetComponent<Enemy>();
-                hitEnemySc.DamagefromEnemy(damage, lookDir, this.gameObject);
+                hitEnemySc.DamagefromEnemy(damage, this.gameObject);
                 GameObject cast = Instantiate(castEffect, hitEnemy.position, Quaternion.identity);
                 SpellEffect castSc = cast.GetComponent<SpellEffect>();
                 castSc.showAttackEffect();
@@ -519,10 +519,10 @@ public class Player : MonoBehaviour
             //saveTargetList();
             return;
         }
-        if (Input.GetKeyDown(KeyCode.Alpha1) && boolCastMagic == false && isAttack == false)
+        if (Input.GetKeyDown(KeyCode.Alpha1) && boolCastMagic == false && isAttack == false && isMoving == false)
         {
             boolCastMagic = true;
-            //saveTargetList();
+            saveTargetList();
             GameObject Box = objTargetBox.gameObject;
             if (curTarget != null)
             {
@@ -548,7 +548,7 @@ public class Player : MonoBehaviour
                 if (curTarget.gameObject.tag == "Enemy")
                 {
                     Enemy targetSc = curTarget.GetComponent<Enemy>();
-                    targetSc.DamagefromEnemy(magicDamage, lookDir, gameObject);
+                    targetSc.DamagefromEnemy(magicDamage, gameObject);
                     GameObject obj = Instantiate(castEffect, targetSc.transform.position, Quaternion.identity);
                     SpellEffect objSc = obj.GetComponent<SpellEffect>();
                     objSc.showHellfireEffect();
