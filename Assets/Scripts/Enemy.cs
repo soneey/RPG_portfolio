@@ -98,6 +98,7 @@ public class Enemy : MonoBehaviour
         rigid = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
         sprDefault = sr.color;
+        sr.color = new Color(1, 1, 1, 0f);
         boxCollider2D = GetComponent<BoxCollider2D>();
         SetStatus();
         curHp = maxHp;
@@ -116,6 +117,7 @@ public class Enemy : MonoBehaviour
         gaugeBar = obj.GetComponent<GaugeBar>();
         gaugeBar.SetHp(curHp, maxHp);
         objPlayer = GameObject.Find("Player");
+        start();
     }
 
     private void Update()
@@ -144,9 +146,25 @@ public class Enemy : MonoBehaviour
             chaseSpeed = UnityEngine.Random.Range(1.0f, 1.5f);
         }
     }
+    IEnumerator gameStart()
+    {
+        sr.color = new Color(1, 1, 1, 0f);
+        yield return new WaitForSeconds(0.3f);
+        sr.color = new Color(1, 1, 1, 0.3f);
+        yield return new WaitForSeconds(0.3f); 
+        sr.color = new Color(1, 1, 1, 0.6f);
+        yield return new WaitForSeconds(0.3f);
+        sr.color = new Color(1, 1, 1, 1f);
+        changeDice = true;
+    }
+    private void start()
+    {
+        StartCoroutine(gameStart());
+    }
+
 
     bool boolAllStop;
-    bool changeDice = true;
+    bool changeDice;
     private void getRandomNumber()
     {
         if (boolAllStop == true) { return; }
@@ -676,13 +694,14 @@ public class Enemy : MonoBehaviour
         Debug.Log($"<color=red>Enemy curHp = {curHp}</color>");
         gaugeBar.SetHp(curHp, maxHp);
         sprDefault = sr.color;
-        sr.color = new Color(1, 0, 0, 0.5f);
+        sr.color = new Color(1, 0, 0, 0.7f);
         Invoke("setSpriteDefault", 0.2f);
     }
     private void dead()
     {
         GameManager.Instance.killPlus(monsterNumber, 1);
-        sr.color = new Color(1, 1, 1, 0.5f);
+        sr.sprite = idle[12];
+        sr.color = new Color(1, 1, 1, 0.7f);
         Destroy(gameObject, 0.5f);
     }
     public float GetRespawnTime()

@@ -124,13 +124,7 @@ MonoBehaviour:
   - {fileID: -1108341659, guid: f1e81b513a64fb24f800439041973e58, type: 3}
   - {fileID: -999159610, guid: f1e81b513a64fb24f800439041973e58, type: 3}
   - {fileID: 1954891261, guid: f1e81b513a64fb24f800439041973e58, type: 3}
-  Explosion:
-  - {fileID: 506533001, guid: 016b7d85f0540dd4eb51db258820a495, type: 3}
-  - {fileID: 618154603, guid: 016b7d85f0540dd4eb51db258820a495, type: 3}
-  - {fileID: 937140592, guid: 016b7d85f0540dd4eb51db258820a495, type: 3}
-  - {fileID: 943837599, guid: 016b7d85f0540dd4eb51db258820a495, type: 3}
-  - {fileID: 1632850764, guid: 016b7d85f0540dd4eb51db258820a495, type: 3}
-  - {fileID: 2047646102, guid: 016b7d85f0540dd4eb51db258820a495, type: 3}
+  - {fileID: 21300000, guid: c47a1a84686209c4aadec710eb684975, type: 3}
   footCheck: 0
   ratio: 0
 --- !u!61 &6154631874330280064

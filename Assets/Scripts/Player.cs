@@ -514,12 +514,14 @@ public class Player : MonoBehaviour
     int curTargetNum = -1;
     private void castMagic()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1) && boolCastMagic == false && isAttack == true)
+        if ((Input.GetKeyDown(KeyCode.Alpha1) && boolCastMagic == false && isAttack == true) ||
+           (Input.GetKeyDown(KeyCode.Keypad1) && boolCastMagic == false && isAttack == true))
         {
             //saveTargetList();
             return;
         }
-        if (Input.GetKeyDown(KeyCode.Alpha1) && boolCastMagic == false && isAttack == false && isMoving == false)
+        if (((Input.GetKeyDown(KeyCode.Alpha1) && boolCastMagic == false && isAttack == false && isMoving == false)) ||
+                ((Input.GetKeyDown(KeyCode.Keypad1) && boolCastMagic == false && isAttack == false && isMoving == false)))
         {
             boolCastMagic = true;
             saveTargetList();
@@ -543,7 +545,7 @@ public class Player : MonoBehaviour
         {
             Transform Box = player.GetChild(1);
             //TargetBox objSc = Box.GetComponent<TargetBox>();
-            if (Input.GetKeyDown(KeyCode.Return))
+            if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
             {
                 if (curTarget.gameObject.tag == "Enemy")
                 {
