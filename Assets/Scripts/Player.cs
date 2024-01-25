@@ -124,7 +124,7 @@ public class Player : MonoBehaviour
         listTarget = new List<GameObject>();
         listTarget.Insert(0, transform.gameObject);
         listTemp2 = new List<GameObject>();
-        listTemp2.Insert(0, Ai.gameObject);
+        //listTemp2.Insert(0, Ai.gameObject);
         int count = layerEnemy.transform.childCount;
         for (int i = 0; i < count; i++)//임시리스트2에 모두 저장
         {

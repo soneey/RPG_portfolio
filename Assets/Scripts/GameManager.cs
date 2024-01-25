@@ -64,15 +64,20 @@ public class GameManager : MonoBehaviour
             Debug.Log($"killCount = {no1MonsterKillCount}");
         }
     }
+    private void eraseEnemy()
+    {
+        int count = layerEnemy.transform.childCount;
+        for (int i = count; i > 1; i--)
+        {
+            Destroy(layerEnemy.transform.GetChild(i - 1).gameObject);
+        }
+    }
     private void nextStage()
     {
-        if (no0MonsterKillCount == 5)
+        if (no0MonsterKillCount >= 5)
         {
-            int count = layerEnemy.transform.childCount;
-            for (int i = count; i > 1; i--)
-            {
-                Destroy(layerEnemy.transform.GetChild(i - 1).gameObject);
-            }
+            Invoke("eraseEnemy", 1f);
+            
             CrazyRabbitRespawn = true;
             createMonster = true;
             no0MonsterKillCount = 0;
@@ -83,12 +88,12 @@ public class GameManager : MonoBehaviour
         if (RabbitRespawn == true)
         {
             monsterNumber = 0;
-            maxRespawnCount = 20;
+            maxRespawnCount = 15;
         }
         if (CrazyRabbitRespawn == true)
         {
             monsterNumber = 1;
-            maxRespawnCount = 5;
+            maxRespawnCount = 7;
         }
     }
 

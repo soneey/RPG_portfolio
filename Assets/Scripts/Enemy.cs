@@ -148,14 +148,28 @@ public class Enemy : MonoBehaviour
     }
     IEnumerator gameStart()
     {
-        sr.color = new Color(1, 1, 1, 0f);
-        yield return new WaitForSeconds(0.3f);
-        sr.color = new Color(1, 1, 1, 0.3f);
-        yield return new WaitForSeconds(0.3f); 
-        sr.color = new Color(1, 1, 1, 0.6f);
-        yield return new WaitForSeconds(0.3f);
-        sr.color = new Color(1, 1, 1, 1f);
-        changeDice = true;
+        if (monsterNumber == 0)
+        {
+            sr.color = new Color(1, 1, 1, 0f);
+            yield return new WaitForSeconds(0.3f);
+            sr.color = new Color(1, 1, 1, 0.3f);
+            yield return new WaitForSeconds(0.3f);
+            sr.color = new Color(1, 1, 1, 0.6f);
+            yield return new WaitForSeconds(0.3f);
+            sr.color = new Color(1, 1, 1, 1f);
+            changeDice = true;
+        }
+        if (monsterNumber == 1)
+        {
+            sr.color = new Color(1, 0.3f, 0.3f, 0f);
+            yield return new WaitForSeconds(0.3f);
+            sr.color = new Color(1, 0.3f, 0.3f, 0.3f);
+            yield return new WaitForSeconds(0.3f);
+            sr.color = new Color(1, 0.3f, 0.3f, 0.6f);
+            yield return new WaitForSeconds(0.3f);
+            sr.color = new Color(1, 0.3f, 0.3f, 1f);
+            changeDice = true;
+        }
     }
     private void start()
     {
@@ -177,30 +191,39 @@ public class Enemy : MonoBehaviour
                 case 0:
                     lookDir = Vector2.left;
                     sr.sprite = idle[0];
+                    target = new Vector3(transform.position.x - 0.5f, transform.position.y);
                     break;
                 case 1:
                     lookDir = Vector2.right;
                     sr.sprite = idle[3];
+                    target = new Vector3(transform.position.x + 0.5f, transform.position.y);
                     break;
                 case 2:
                     lookDir = Vector2.up;
                     sr.sprite = idle[6];
+                    target = new Vector3(transform.position.x, transform.position.y + 0.5f);
                     break;
                 case 3:
                     lookDir = Vector2.down;
                     sr.sprite = idle[9];
+                    target = new Vector3(transform.position.x, transform.position.y - 0.5f);
                     break;
                 case 4:
                     break;
             }
             changeDice = false;
+            beforeSave = true;
+            before = transform.position;
         }
         RaycastHit2D[] hit = Physics2D.RaycastAll(boxCollider2D.bounds.center, lookDir, 0.5f);
         Debug.DrawRay(boxCollider2D.bounds.center, lookDir * 0.5f, Color.magenta);
         if (hit.Length == 1)
         {
-            setTarget = true;
-            setMovingTarget();
+            //setTarget = true;
+            //setMovingTarget();
+            isMoving = true;
+            checkChangeSpriteDelay = true;
+            curMotion = enemyMotion.Step;
         }
         else
         {
@@ -656,7 +679,6 @@ public class Enemy : MonoBehaviour
 
         if (attackDelayCheck == 100.0f && isAttack == true && boolAttackDelayCheck == false && Vector3.Distance(transform.position, attackTarget.transform.position) != 0.5f)
         {
-            Debug.Log("d");
             boolSetChaseTarget = true;
             setChaseTarget();
         }
